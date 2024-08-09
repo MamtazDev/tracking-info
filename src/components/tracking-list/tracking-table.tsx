@@ -111,7 +111,7 @@ export function TrackingInfoDataTable() {
   const { toast } = useToast();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [data, setData] = useState<any[]>([]);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [deletedItem, setDeletedItem] = useState<string | null>(null);
 
   const openModal = useStore((state) => state.openModal);
   const setEditableContactInfo = useStore(
@@ -218,20 +218,13 @@ export function TrackingInfoDataTable() {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        // let loadId = "#sdjlfmk";
         const loadId = row.original._id;
-        // const handleDelete = () => {
-        //   deleteTrackingInfo(loadId);
-        //   toast({
-        //     title: "Deleted Successfully!",
-        //   });
-        // };
         const handleDelete = async () => {
-          console.log(loadId)
           try {
             const response = await fetch(`/api/trackings/${loadId}`, {
               method: 'DELETE',
             });
+            setDeletedItem(loadId)
             if (response.ok) {
               toast({
                 title: "Deleted Successfully!",
@@ -254,7 +247,36 @@ export function TrackingInfoDataTable() {
           setRecordBeingEdited(loadId);
           handleOpenModal();
         };
-      
+
+        const handleArchive = async () => {
+          try {
+            const response = await fetch(`/api/trackings/${loadId}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                isArchived: true,
+              }),
+            });
+
+            if (response.ok) {
+              toast({
+                title: "Archived Successfully!",
+              });
+              setData((prevData) => prevData.filter(item => item._id !== loadId));
+            } else {
+              toast({
+                title: "Failed to archive.",
+              });
+            }
+          } catch (error) {
+            console.error("Failed to archive:", error);
+            toast({
+              title: "An error occurred.",
+            });
+          }
+        };
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -280,7 +302,9 @@ export function TrackingInfoDataTable() {
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <div className="flex gap-2.5 items-center bg-[#F4F4F5] border border-lightblue rounded-[14px] px-3 py-2.5 w-full text-xs cursor-pointer font-semibold">
+                <div
+                  onClick={handleArchive}
+                  className="flex gap-2.5 items-center bg-[#F4F4F5] border border-lightblue rounded-[14px] px-3 py-2.5 w-full text-xs cursor-pointer font-semibold">
                   <Image src={archive} alt="" />
                   <p>Archive</p>
                 </div>
@@ -324,6 +348,7 @@ export function TrackingInfoDataTable() {
     onOpen();
   };
 
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -331,31 +356,18 @@ export function TrackingInfoDataTable() {
         const result = await response.json();
 
         if (result.success) {
-          setTableData(result.data);
-          // table.setState(result.data)
-          setData(result.data)
+          const filteredData = result.data.filter((item: any) => !item.isArchived);
+          setTableData(filteredData);
+          setData(filteredData);
         }
       } catch (error) {
         console.log(error);
       }
     };
-
     fetchData();
-  }, []);
+  }, [deletedItem]);
 
 
-  const [formData, setFormData] = useState({
-    loadId: '',
-    driverName: '',
-    driverPhone: '',
-    carrierName: '',
-    carrierPhone: '',
-    notificationEmail: '',
-    notificationPhone: '',
-    status: '',
-    note: '',
-  });
-  
   return (
     <>
       <>
