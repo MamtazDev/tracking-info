@@ -1,16 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Icon } from "@/icons";
 import { Badge } from "@/components/ui/badge";
-import { DateInput, TimeInput } from "@nextui-org/react";
-import { CalendarDate, DateValue, Time } from "@internationalized/date";
-import Image from "next/image";
-import docempty from "../../../public/images/document.svg";
-import ticksqure from "../../../public/images/tick-square.svg";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Icon } from "@/icons";
 import { Location } from "@/interface";
+import { CalendarDate, DateValue, Time } from "@internationalized/date";
+import { DateInput, TimeInput } from "@nextui-org/react";
+import React, { useState } from "react";
 
 const formatDate = (date: DateValue) => {
   const month = String(date.month).padStart(2, "0");
@@ -26,9 +23,9 @@ const formatTime = (time: Time) => {
 };
 
 type Props = {
-  locations: Location[]
-  setLocations: React.Dispatch<React.SetStateAction<Location[]>>
-}
+  locations: Location[];
+  setLocations: React.Dispatch<React.SetStateAction<Location[]>>;
+};
 
 export default function LocationComp({ locations, setLocations }: Props) {
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
@@ -127,7 +124,6 @@ export default function LocationComp({ locations, setLocations }: Props) {
       locations.map((loc) => (loc.id === id ? { ...loc, [field]: value } : loc))
     );
   };
-  console.log(locations,"SDf")
 
   return (
     <div className="pt-4">
@@ -223,8 +219,9 @@ export default function LocationComp({ locations, setLocations }: Props) {
             <Button
               type="button"
               onClick={addLocation}
-              className={`${editingLocation ? "bg-[#64bf36]" : "bg-[#406AEC]"
-                }  h-[30px] w-full sm:w-auto px-1 hover:bg-[#406AEC] hover:opacity-80 transition-all`}
+              className={`${
+                editingLocation ? "bg-[#64bf36]" : "bg-[#406AEC]"
+              }  h-[30px] w-full sm:w-auto px-1 hover:bg-[#406AEC] hover:opacity-80 transition-all`}
             >
               <span>
                 <Icon name={editingLocation ? "check" : "plus"} />

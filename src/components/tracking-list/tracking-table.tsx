@@ -1,20 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
-import {
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-  ColumnDef,
-  SortingState,
-  ColumnFiltersState,
-  VisibilityState,
-  RowSelectionState,
-} from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -33,28 +18,42 @@ import {
 } from "@/components/ui/table";
 import {
   Modal,
-  ModalContent,
   ModalBody,
+  ModalContent,
   useDisclosure,
 } from "@nextui-org/react";
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  RowSelectionState,
+  SortingState,
+  useReactTable,
+  VisibilityState,
+} from "@tanstack/react-table";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
 import { useToast } from "@/components/ui/use-toast";
-import TabComponent from "./tab";
 
-import eye from "../../../public/images/eye.svg";
-import edit from "../../../public/images/edit.svg";
 import archive from "../../../public/images/archive.svg";
-import trash from "../../../public/images/trash.svg";
-import more from "../../../public/images/more.svg";
+import edit from "../../../public/images/edit.svg";
+import eye from "../../../public/images/eye.svg";
 import filter from "../../../public/images/filter.svg";
+import more from "../../../public/images/more.svg";
 import search from "../../../public/images/search.svg";
+import trash from "../../../public/images/trash.svg";
 
-import tracknewload from "../../../public/images/plus-blue.svg";
-import { PaginationDemo } from "./pagination";
-import { format } from "date-fns";
-import useStore from "@/lib/store";
 import { Clock } from "@/icons/Clock";
+import useStore from "@/lib/store";
+import { format } from "date-fns";
+import tracknewload from "../../../public/images/plus-blue.svg";
 import Contactinfo from "./contact-info";
+import { PaginationDemo } from "./pagination";
 
 interface Load {
   id: string;
@@ -86,24 +85,24 @@ const transformData = (data: any[]): Load[] => {
       cityState: item.pickupLocations[0]?.pickuplocation,
       dateTime:
         item.pickupLocations?.length > 0 &&
-          item.pickupLocations[0]?.actualPickupDate &&
-          item.pickupLocations[0]?.actualPickupTime
+        item.pickupLocations[0]?.actualPickupDate &&
+        item.pickupLocations[0]?.actualPickupTime
           ? `${format(
-            new Date(item.pickupLocations[0]?.actualPickupDate),
-            "d MMMM, yyyy"
-          )} at ${item.pickupLocations[0]?.actualPickupTime}`
+              new Date(item.pickupLocations[0]?.actualPickupDate),
+              "d MMMM, yyyy"
+            )} at ${item.pickupLocations[0]?.actualPickupTime}`
           : "",
     },
     finalDropoff: {
       cityState: item.dropoffLocations[0]?.dropOfflocation,
       dateTime:
         item.dropoffLocations?.length > 0 &&
-          item.dropoffLocations[0]?.actualDropOffDate &&
-          item.dropoffLocations[0]?.actualDropOffTime
+        item.dropoffLocations[0]?.actualDropOffDate &&
+        item.dropoffLocations[0]?.actualDropOffTime
           ? `${format(
-            new Date(item.dropoffLocations[0]?.actualDropOffDate),
-            "d MMMM, yyyy"
-          )} at ${item.dropoffLocations[0]?.actualDropOffTime}`
+              new Date(item.dropoffLocations[0]?.actualDropOffDate),
+              "d MMMM, yyyy"
+            )} at ${item.dropoffLocations[0]?.actualDropOffTime}`
           : "",
     },
     status: item?.status,
@@ -114,7 +113,12 @@ const transformData = (data: any[]): Load[] => {
 export function TrackingInfoDataTable() {
   const { toast } = useToast();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
+  const [isOpenModal, setOpenModal] = useState(false);
   const [data, setData] = useState<any[]>([]);
+
+  const [editData, setEditData] = useState(null);
+  console.log(editData);
 
   const openModal = useStore((state) => state.openModal);
   const setEditableContactInfo = useStore(
@@ -123,7 +127,6 @@ export function TrackingInfoDataTable() {
   const trackingInfo = useStore((state) => state.trackingInfo);
   const deleteTrackingInfo = useStore((state) => state.deleteTrackingInfo);
   const setRecordBeingEdited = useStore((state) => state.setRecordBeingEdited);
-
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -222,18 +225,23 @@ export function TrackingInfoDataTable() {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const loadId = "#sdjlfmk";
-        // const loadId = row.original.loadId.replace("#", "");
-        const handleDelete = () => {
+        const id = row.original._id;
+
+        /* const handleDelete = () => {
           deleteTrackingInfo(loadId);
           toast({
             title: "Deleted Successfully!",
           });
-        };
-        const handleEdit = () => {
-          setRecordBeingEdited(loadId);
+        }; */
+        const handleEdit = async () => {
+          // setRecordBeingEdited(id);
+          const response = await fetch(`/api/trackings/${id}`); // Replace with your API endpoint
+          const result = await response.json();
+
+          setEditData(result.data);
           handleOpenModal();
         };
+
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -266,7 +274,7 @@ export function TrackingInfoDataTable() {
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <div
-                  onClick={handleDelete}
+                  // onClick={handleDelete}
                   className="flex gap-2.5 items-center bg-[#FCEAEC] border border-lightblue rounded-[14px] px-3 py-2.5 w-full text-xs cursor-pointer font-semibold"
                 >
                   <Image src={trash} alt="" />
@@ -306,13 +314,13 @@ export function TrackingInfoDataTable() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/trackings');
+        const response = await fetch("/api/trackings");
         const result = await response.json();
 
         if (result.success) {
           setTableData(result.data);
           // table.setState(result.data)
-          setData(result.data)
+          setData(result.data);
         }
       } catch (error) {
         console.log(error);
@@ -323,39 +331,39 @@ export function TrackingInfoDataTable() {
   }, []);
 
   const [formData, setFormData] = useState({
-    loadId: '',
-    driverName: '',
-    driverPhone: '',
-    carrierName: '',
-    carrierPhone: '',
-    notificationEmail: '',
-    notificationPhone: '',
-    status: '',
-    note: '',
+    loadId: "",
+    driverName: "",
+    driverPhone: "",
+    carrierName: "",
+    carrierPhone: "",
+    notificationEmail: "",
+    notificationPhone: "",
+    status: "",
+    note: "",
   });
 
   const handleFormDataChange = (updatedData: any) => {
-    setFormData(prevData => ({ ...prevData, ...updatedData }));
+    setFormData((prevData) => ({ ...prevData, ...updatedData }));
   };
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch('/api/tracking', {
-        method: 'POST',
+      const response = await fetch("/api/tracking", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
 
       const result = await response.json();
       if (result.success) {
-        console.log('Form submitted successfully:', result.data);
+        console.log("Form submitted successfully:", result.data);
       } else {
-        console.error('Form submission failed:', result.error);
+        console.error("Form submission failed:", result.error);
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error("Error submitting form:", error);
     }
   };
 
@@ -425,21 +433,24 @@ export function TrackingInfoDataTable() {
             </div>
           </div>
           <Modal
-            isOpen={isOpen}
+            // isOpen={isOpen}
+            isOpen={isOpenModal}
             onOpenChange={onOpenChange}
             size={"5xl"}
             scrollBehavior="inside"
             className="max-w-7xl rounded-lg"
           >
             <ModalContent>
-              {(onClose) => (
-                <>
-                  <ModalBody>
-                    <Contactinfo />
-                    {/* <TabComponent /> */}
-                  </ModalBody>
-                </>
-              )}
+              {(onClose) => {
+                return (
+                  <>
+                    <ModalBody>
+                      <Contactinfo />
+                      {/* <TabComponent /> */}
+                    </ModalBody>
+                  </>
+                );
+              }}
             </ModalContent>
           </Modal>
           <div className="main-table">
