@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import user from "../../../public/images/user.svg";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import InputMask from "react-input-mask";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
+import docempty from "../../../public/images/document.svg";
+import ticksqure from "../../../public/images/tick-square.svg";
 import {
   Form,
   FormControl,
@@ -18,12 +20,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { contactinfo } from "@/data";
 import useStore from "@/lib/store";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import phone from "../../../public/images/phone.svg";
 import avatar from "../../../public/images/profile-blue.svg";
 import documentText from "../../../public/images/document-text.svg";
 import { Label } from "../ui/label";
+import TabComponent from "./tab";
+import { Location } from "@/interface";
 
 const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
 
@@ -32,6 +35,7 @@ const formSchema = z.object({
     .string()
     .min(1, { message: "Required" })
     .max(50, { message: "Max 50 chars" }),
+  loadStatus: z.string().default("delivered"),
   driverName: z
     .string()
     .min(1, { message: "Required" })
@@ -40,13 +44,6 @@ const formSchema = z.object({
     .string()
     .min(1, { message: "Required" })
     .regex(phoneRegex, { message: "Please enter a valid phone number" }),
-  brokerName: z.string().max(50, { message: "Max 50 chars" }).optional(),
-  brokerPhone: z
-    .string()
-    .optional()
-    .refine((value) => !value || phoneRegex.test(value), {
-      message: "Please enter a valid phone number",
-    }),
   carrierName: z.string().max(50, { message: "Max 50 chars" }).optional(),
   carrierPhone: z
     .string()
@@ -54,36 +51,34 @@ const formSchema = z.object({
     .refine((value) => !value || phoneRegex.test(value), {
       message: "Please enter a valid phone number",
     }),
+  notificationPhone: z
+    .string()
+    .optional()
+    .refine((value) => !value || phoneRegex.test(value), {
+      message: "Please enter a valid phone number",
+    }),
+  notificationEmail: z.string().email(),
+  note: z.string().optional(),
+  status: z.string().default("none")
 });
 
 const Contactinfo: React.FC = () => {
-  const { toast } = useToast();
-
   const isOpen = useStore((state) => state.isOpen);
-  const closeModal = useStore((state) => state.closeModal);
-  const setLoadId = useStore((state) => state.setLoadId);
   const recordBeingEdited = useStore((state) => state.recordBeingEdited);
   const setRecordBeingEdited = useStore((state) => state.setRecordBeingEdited);
   const editableContactInfo = useStore((state) => state.editableContactInfo);
   const setEditableContactInfo = useStore(
     (state) => state.setEditableContactInfo
   );
-  const addContactInfo = useStore((state) => state.addContactInfo);
-  const updateContactInfo = useStore((state) => state.updateContactInfo);
+
+  const [isDraft, setIsDraft] = useState(false)
+  const [locations, setLocations] = useState<Location[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: editableContactInfo || {},
     mode: "onChange",
   });
-
-  const [emails, setEmails] = useState<string[]>([]);
-  const [emailInput, setEmailInput] = useState("");
-  const emailInputRef = useRef<HTMLInputElement>(null);
-
-  const [phones, setPhones] = useState<string[]>([]);
-  const [phoneInput, setPhoneInput] = useState("");
-  const phoneInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -103,86 +98,36 @@ const Contactinfo: React.FC = () => {
     setRecordBeingEdited,
   ]);
 
-  const handleFormSubmit = (
-    values: z.infer<typeof formSchema>,
-    isDraft: boolean
-  ) => {
-    const currentDate = format(new Date(), "MM-dd-yy");
-    const currentTime = format(new Date(), "hh:mm a");
-    const updatedValues = {
-      ...values,
-      date: currentDate,
-      time: currentTime,
-      emails,
-      phones,
-    };
-
-    if (editableContactInfo) {
-      setLoadId(updatedValues.loadId);
-      updateContactInfo(updatedValues);
-      toast({
-        title: isDraft
-          ? "Entry saved as draft!"
-          : "Entry updated successfully!",
-        description: isDraft ? "Your form has been saved as draft." : undefined,
+  const handleFormSubmit = async (data: z.infer<typeof formSchema>) => {
+    const isPublished = isDraft
+    try {
+      const response = await fetch('/api/trackings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ...data, locations, isPublished }),
       });
-    } else {
-      setLoadId(updatedValues.loadId);
-      addContactInfo(updatedValues);
-      toast({
-        title: isDraft
-          ? "Entry saved as draft!"
-          : "Entry created successfully!",
-        description: isDraft
-          ? "Your form has been saved as draft."
-          : "Your form has been submitted.",
-      });
-    }
 
-    if (isDraft) {
-      closeModal();
-    }
-  };
+      const result = await response.json();
+      console.log(result)
+      if (result.success) {
+        const isDraft = result.status === 'draft'
 
-  const handleEmailInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmailInput(e.target.value);
-  };
-
-  const handleEmailKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      if (emailInput && !emails.includes(emailInput)) {
-        setEmails([...emails, emailInput]);
-        setEmailInput("");
+        toast({
+          title: isDraft
+            ? "Entry saved as draft!"
+            : "Entry created successfully!",
+          description: isDraft
+            ? "Your form has been saved as draft."
+            : "Your form has been submitted.",
+        });
+      } else {
+        alert('Error submitting data');
       }
+    } catch (error) {
+      console.error('Network error:', error);
     }
-  };
-
-  const removeEmail = (emailToRemove: string) => {
-    setEmails(emails.filter((email) => email !== emailToRemove));
-  };
-
-  const handlePhoneInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPhoneInput(e.target.value);
-  };
-
-  const handlePhoneKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      if (phoneInput && !phones.includes(phoneInput)) {
-        setPhones([...phones, phoneInput]);
-        setPhoneInput("");
-        setTimeout(() => {
-          if (phoneInputRef.current) {
-            phoneInputRef.current.setSelectionRange(0, 0);
-          }
-        }, 0);
-      }
-    }
-  };
-
-  const removePhone = (phoneToRemove: string) => {
-    setPhones(phones.filter((phone) => phone !== phoneToRemove));
   };
 
   return (
@@ -198,13 +143,11 @@ const Contactinfo: React.FC = () => {
 
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit((values) =>
-                handleFormSubmit(values, false)
-              )}
+              onSubmit={form.handleSubmit(handleFormSubmit)}
             >
               <div className="mb-4 ml-7 md:hidden">
                 <div className="flex items-center space-x-4">
-                  <Label className="text-muted-foreground">Status:</Label>
+                  <Label className="text-muted-foreground">Status</Label>
                   <div
                     className={`capitalize flex justify-center rounded-xl text-[13px] cursor-pointer font-semibold text-[#FFA51F] bg-[#F6F0E8] py-2.5 px-8`}
                   >
@@ -226,7 +169,7 @@ const Contactinfo: React.FC = () => {
                           <div
                             className={cn(
                               item.type !== "select" &&
-                                "flex items-center gap-2.5 my-3 rounded-[14px] border border-[#F4F4F5] px-4 py-2 cursor-pointer w-full",
+                              "flex items-center gap-2.5 my-3 rounded-[14px] border border-[#F4F4F5] px-4 py-2 cursor-pointer w-full",
                               isFirstItem ? "md:col-span-2" : ""
                             )}
                           >
@@ -280,11 +223,12 @@ const Contactinfo: React.FC = () => {
                   );
                 })}
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <FormField
                   control={form.control}
                   //@ts-ignore
-                  name={"notification-email"}
+                  name={"notificationEmail"}
                   render={({ field }) => (
                     <FormItem>
                       <div
@@ -294,29 +238,11 @@ const Contactinfo: React.FC = () => {
                       >
                         <FormControl>
                           <div className="flex flex-wrap items-center gap-2">
-                            {emails.map((email, index) => (
-                              <div
-                                key={index}
-                                className="flex border transition-all hover:opacity-60 items-center gap-2 px-3 py-1 bg-gray-200 rounded-full"
-                              >
-                                <span>{email}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => removeEmail(email)}
-                                  className="text-[#3f3f40]"
-                                >
-                                  &times;
-                                </button>
-                              </div>
-                            ))}
                             <Input
                               type="email"
                               placeholder="Notification Email"
-                              value={emailInput}
-                              onChange={handleEmailInputChange}
-                              onKeyPress={handleEmailKeyPress}
                               className="bg-transparent border-none flex-grow"
-                              ref={emailInputRef}
+                              {...field}
                             />
                           </div>
                         </FormControl>
@@ -333,7 +259,7 @@ const Contactinfo: React.FC = () => {
                 <FormField
                   control={form.control}
                   //@ts-ignore
-                  name={"notification-phone"}
+                  name={"notificationPhone"}
                   render={({ field }) => (
                     <FormItem>
                       <div
@@ -343,38 +269,15 @@ const Contactinfo: React.FC = () => {
                       >
                         <FormControl>
                           <div className="flex flex-wrap items-center gap-2">
-                            {phones.map((phone, index) => (
-                              <div
-                                key={index}
-                                className="flex border transition-all hover:opacity-60 items-center gap-2 px-3 py-1 bg-gray-200 rounded-full"
-                              >
-                                <span>{phone}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => removePhone(phone)}
-                                  className="text-[#3f3f40]"
-                                >
-                                  &times;
-                                </button>
-                              </div>
-                            ))}
-                            <InputMask
-                              mask="(999) 999-9999"
-                              pattern="[0-9]*"
-                              value={phoneInput}
-                              onChange={handlePhoneInputChange}
-                              onKeyDown={handlePhoneKeyPress}
-                            >
+                            <InputMask mask="(999) 999-9999" {...field}>
                               {
                                 //@ts-ignore
                                 (inputProps) => (
                                   <Input
                                     type="tel"
-                                    pattern="[0-9]*"
-                                    placeholder="Notification Phone"
+                                    placeholder={"Notification Phone"}
+                                    className="bg-transparent border-none"
                                     {...inputProps}
-                                    className="bg-transparent border-none flex-grow"
-                                    ref={phoneInputRef}
                                   />
                                 )
                               }
@@ -396,7 +299,7 @@ const Contactinfo: React.FC = () => {
               <FormField
                 control={form.control}
                 //@ts-ignore
-                name={"message"}
+                name={"note"}
                 render={({ field }) => (
                   <FormItem>
                     <div
@@ -421,6 +324,24 @@ const Contactinfo: React.FC = () => {
                   </FormItem>
                 )}
               />
+              <TabComponent locations={locations} setLocations={setLocations} />
+
+
+              <div className="flex sm:flex-row  py-10 px-4 flex-col gap-4 justify-start md:justify-end">
+                <button onClick={() => setIsDraft(false)} type="submit" className="flex justify-center gap-2.5 px-6 py-3 text-primaryblue bg-lightblue rounded-[14px] cursor-pointer">
+                  <Image src={docempty} alt="" />
+                  <p>Save as Draft</p>
+                </button>
+                <button
+                  onClick={() => setIsDraft(true)}
+                  type="submit"
+                  className="flex justify-center gap-2.5 px-6 py-3 text-white bg-primaryblue rounded-[14px] cursor-pointer"
+                >
+                  <Image src={ticksqure} alt="" />
+                  <p>Publish</p>
+                </button>
+
+              </div>
             </form>
           </Form>
         </div>
