@@ -26,7 +26,6 @@ export async function POST(req: Request) {
 export async function GET(req: Request, { params }: Params) {
   try {
     const result = await Tracking.find({});
-    console.log(result);
 
     return Response.json({
       success: true,
