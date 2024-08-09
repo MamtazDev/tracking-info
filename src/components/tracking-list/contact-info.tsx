@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import InputMask from "react-input-mask";
-import { useToast } from "@/components/ui/use-toast";
+import { toast, useToast } from "@/components/ui/use-toast";
 import {
   Form,
   FormControl,
@@ -25,6 +25,7 @@ import avatar from "../../../public/images/profile-blue.svg";
 import documentText from "../../../public/images/document-text.svg";
 import { Label } from "../ui/label";
 import TabComponent from "./tab";
+import { Location } from "@/interface";
 
 const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
 
@@ -70,6 +71,13 @@ const Contactinfo: React.FC = () => {
     (state) => state.setEditableContactInfo
   );
 
+  const [locations, setLocations] = useState<Location[]>([]);  
+
+
+  console.log(locations[0]?.startDate.calendar);
+  console.log(locations[0]);
+  
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: editableContactInfo || {},
@@ -102,14 +110,23 @@ const Contactinfo: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, locations }),
       });
 
       const result = await response.json();
       console.log(result)
 
       if (result.success) {
-        alert('Data submitted successfully');
+        const isDraft = result.status === 'draft'
+
+        toast({
+          title: isDraft
+            ? "Entry saved as draft!"
+            : "Entry created successfully!",
+          description: isDraft
+            ? "Your form has been saved as draft."
+            : "Your form has been submitted.",
+        });
       } else {
         alert('Error submitting data');
       }
@@ -371,9 +388,7 @@ const Contactinfo: React.FC = () => {
                   </FormItem>
                 )}
               />
-              <TabComponent />
-
-
+              <TabComponent locations={locations} setLocations={setLocations} />
             </form>
           </Form>
         </div>

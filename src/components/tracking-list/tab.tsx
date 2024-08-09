@@ -1,9 +1,30 @@
 import { Tabs, Tab } from "@nextui-org/tabs";
-import Location from "./location";
+import LocationComp from "./location";
 import Trackingdetails from "./tracking-details";
 import { Icon } from "@/icons";
+import { Location } from "@/interface";
 
-const TabComponent = () => {
+type Props = {
+  locations: Location[]
+  setLocations: React.Dispatch<React.SetStateAction<Location[]>>
+}
+
+const TabComponent = ({ locations, setLocations }: Props) => {
+  const tabsData = [
+    {
+      tabscontent: LocationComp,
+      value: "Stops",
+      icon: "stops",
+      props: { locations, setLocations }
+    },
+    {
+      tabscontent: Trackingdetails,
+      value: "Tracking-Info",
+      icon: "tracking",
+      props: {}
+    },
+  ];
+
   return (
     <Tabs
       aria-label="Options"
@@ -28,7 +49,8 @@ const TabComponent = () => {
             </div>
           }
         >
-          <item.tabscontent />
+          {/* @ts-ignore */}
+          <item.tabscontent {...item.props} />
         </Tab>
       ))}
     </Tabs>
@@ -36,16 +58,3 @@ const TabComponent = () => {
 };
 
 export default TabComponent;
-
-const tabsData = [
-  {
-    tabscontent: Location,
-    value: "Stops",
-    icon: "stops",
-  },
-  {
-    tabscontent: Trackingdetails,
-    value: "Tracking-Info",
-    icon: "tracking",
-  },
-];
