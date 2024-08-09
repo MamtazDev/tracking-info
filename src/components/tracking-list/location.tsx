@@ -388,11 +388,12 @@ export default function LocationComp({ locations, setLocations }: Props) {
           </div>
         ))}
       </div>
-      <div className="flex sm:flex-row  py-10 px-4 flex-col gap-4 justify-start md:justify-end">
-        <div className="flex justify-center gap-2.5 px-6 py-3 text-primaryblue bg-lightblue rounded-[14px] cursor-pointer">
+
+      {/* <div className="flex sm:flex-row  py-10 px-4 flex-col gap-4 justify-start md:justify-end">
+        <button type="submit" className="flex justify-center gap-2.5 px-6 py-3 text-primaryblue bg-lightblue rounded-[14px] cursor-pointer">
           <Image src={docempty} alt="" />
           <p>Save as Draft</p>
-        </div>
+        </button>
         <button
           type="submit"
           className="flex justify-center gap-2.5 px-6 py-3 text-white bg-primaryblue rounded-[14px] cursor-pointer"
@@ -400,7 +401,8 @@ export default function LocationComp({ locations, setLocations }: Props) {
           <Image src={ticksqure} alt="" />
           <p>Publish</p>
         </button>
-      </div>
+        
+      </div> */}
     </div>
   );
 }

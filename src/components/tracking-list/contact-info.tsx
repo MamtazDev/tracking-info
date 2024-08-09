@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import user from "../../../public/images/user.svg";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import InputMask from "react-input-mask";
-import { toast, useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
+import docempty from "../../../public/images/document.svg";
+import ticksqure from "../../../public/images/tick-square.svg";
 import {
   Form,
   FormControl,
@@ -18,7 +20,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { contactinfo } from "@/data";
 import useStore from "@/lib/store";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import phone from "../../../public/images/phone.svg";
 import avatar from "../../../public/images/profile-blue.svg";
@@ -62,7 +63,6 @@ const formSchema = z.object({
 });
 
 const Contactinfo: React.FC = () => {
-
   const isOpen = useStore((state) => state.isOpen);
   const recordBeingEdited = useStore((state) => state.recordBeingEdited);
   const setRecordBeingEdited = useStore((state) => state.setRecordBeingEdited);
@@ -71,12 +71,8 @@ const Contactinfo: React.FC = () => {
     (state) => state.setEditableContactInfo
   );
 
-  const [locations, setLocations] = useState<Location[]>([]);  
-
-
-  console.log(locations[0]?.startDate.calendar);
-  console.log(locations[0]);
-  
+  const [isDraft, setIsDraft] = useState(false)
+  const [locations, setLocations] = useState<Location[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -102,20 +98,19 @@ const Contactinfo: React.FC = () => {
     setRecordBeingEdited,
   ]);
 
-  const handleFormSubmitBySifat = async (data: z.infer<typeof formSchema>) => {
-    console.log("FormSubmit", data);
+  const handleFormSubmit = async (data: z.infer<typeof formSchema>) => {
+    const isPublished = isDraft
     try {
       const response = await fetch('/api/trackings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...data, locations }),
+        body: JSON.stringify({ ...data, locations, isPublished }),
       });
 
       const result = await response.json();
       console.log(result)
-
       if (result.success) {
         const isDraft = result.status === 'draft'
 
@@ -135,62 +130,6 @@ const Contactinfo: React.FC = () => {
     }
   };
 
-  // const handleFormSubmit = (
-  //   values: z.infer<typeof formSchema>,
-  //   isDraft: boolean
-  // ) => {
-  //   const currentDate = format(new Date(), "MM-dd-yy");
-  //   const currentTime = format(new Date(), "hh:mm a");
-  //   const updatedValues = {
-  //     ...values,
-  //     date: currentDate,
-  //     time: currentTime,
-  //     emails,
-  //     phones,
-  //   };
-
-  //   if (editableContactInfo) {
-  //     setLoadId(updatedValues.loadId);
-  //     updateContactInfo(updatedValues);
-  //     toast({
-  //       title: isDraft
-  //         ? "Entry saved as draft!"
-  //         : "Entry updated successfully!",
-  //       description: isDraft ? "Your form has been saved as draft." : undefined,
-  //     });
-  //   } else {
-  //     setLoadId(updatedValues.loadId);
-  //     addContactInfo(updatedValues);
-  //     toast({
-  //       title: isDraft
-  //         ? "Entry saved as draft!"
-  //         : "Entry created successfully!",
-  //       description: isDraft
-  //         ? "Your form has been saved as draft."
-  //         : "Your form has been submitted.",
-  //     });
-  //   }
-
-  //   if (isDraft) {
-  //     closeModal();
-  //   }
-  // };
-
-  // const handleEmailInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setEmailInput(e.target.value);
-  // };
-
-  // const handleEmailKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-  //   if (e.key === "Enter" || e.key === " ") {
-  //     e.preventDefault();
-  //     if (emailInput && !emails.includes(emailInput)) {
-  //       setEmails([...emails, emailInput]);
-  //       setEmailInput("");
-  //     }
-  //   }
-  // };
-
-
   return (
     <div>
       <div className="bg-white">
@@ -204,10 +143,7 @@ const Contactinfo: React.FC = () => {
 
           <Form {...form}>
             <form
-              // onSubmit={form.handleSubmit((values) =>
-              //   handleFormSubmit(values, false)
-              // )}
-              onSubmit={form.handleSubmit(handleFormSubmitBySifat)}
+              onSubmit={form.handleSubmit(handleFormSubmit)}
             >
               <div className="mb-4 ml-7 md:hidden">
                 <div className="flex items-center space-x-4">
@@ -389,12 +325,27 @@ const Contactinfo: React.FC = () => {
                 )}
               />
               <TabComponent locations={locations} setLocations={setLocations} />
+
+
+              <div className="flex sm:flex-row  py-10 px-4 flex-col gap-4 justify-start md:justify-end">
+                <button onClick={() => setIsDraft(false)} type="submit" className="flex justify-center gap-2.5 px-6 py-3 text-primaryblue bg-lightblue rounded-[14px] cursor-pointer">
+                  <Image src={docempty} alt="" />
+                  <p>Save as Draft</p>
+                </button>
+                <button
+                  onClick={() => setIsDraft(true)}
+                  type="submit"
+                  className="flex justify-center gap-2.5 px-6 py-3 text-white bg-primaryblue rounded-[14px] cursor-pointer"
+                >
+                  <Image src={ticksqure} alt="" />
+                  <p>Publish</p>
+                </button>
+
+              </div>
             </form>
           </Form>
         </div>
       </div>
-
-
     </div>
   );
 };

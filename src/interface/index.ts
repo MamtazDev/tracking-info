@@ -24,6 +24,7 @@ export interface ITracking {
     endTime: Time;
   }[];
   status: string;
+  isPublished: boolean;
 }
 
 export interface Location {
