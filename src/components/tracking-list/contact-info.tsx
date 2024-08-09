@@ -33,6 +33,7 @@ const formSchema = z.object({
     .string()
     .min(1, { message: "Required" })
     .max(50, { message: "Max 50 chars" }),
+  loadStatus: z.string().default("delivered"),
   driverName: z
     .string()
     .min(1, { message: "Required" })
@@ -60,33 +61,20 @@ const formSchema = z.object({
 });
 
 const Contactinfo: React.FC = () => {
-  const { toast } = useToast();
 
   const isOpen = useStore((state) => state.isOpen);
-  const closeModal = useStore((state) => state.closeModal);
-  const setLoadId = useStore((state) => state.setLoadId);
   const recordBeingEdited = useStore((state) => state.recordBeingEdited);
   const setRecordBeingEdited = useStore((state) => state.setRecordBeingEdited);
   const editableContactInfo = useStore((state) => state.editableContactInfo);
   const setEditableContactInfo = useStore(
     (state) => state.setEditableContactInfo
   );
-  const addContactInfo = useStore((state) => state.addContactInfo);
-  const updateContactInfo = useStore((state) => state.updateContactInfo);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: editableContactInfo || {},
     mode: "onChange",
   });
-
-  const [emails, setEmails] = useState<string[]>([]);
-  const [emailInput, setEmailInput] = useState("");
-  const emailInputRef = useRef<HTMLInputElement>(null);
-
-  const [phones, setPhones] = useState<string[]>([]);
-  const [phoneInput, setPhoneInput] = useState("");
-  const phoneInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -115,7 +103,7 @@ const Contactinfo: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
-      });``
+      });
 
       const result = await response.json();
       console.log(result)
@@ -185,32 +173,6 @@ const Contactinfo: React.FC = () => {
   //   }
   // };
 
-  const removeEmail = (emailToRemove: string) => {
-    setEmails(emails.filter((email) => email !== emailToRemove));
-  };
-
-  // const handlePhoneInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setPhoneInput(e.target.value);
-  // };
-
-  // const handlePhoneKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-  //   if (e.key === "Enter" || e.key === " ") {
-  //     e.preventDefault();
-  //     if (phoneInput && !phones.includes(phoneInput)) {
-  //       setPhones([...phones, phoneInput]);
-  //       setPhoneInput("");
-  //       setTimeout(() => {
-  //         if (phoneInputRef.current) {
-  //           phoneInputRef.current.setSelectionRange(0, 0);
-  //         }
-  //       }, 0);
-  //     }
-  //   }
-  // };
-
-  const removePhone = (phoneToRemove: string) => {
-    setPhones(phones.filter((phone) => phone !== phoneToRemove));
-  };
 
   return (
     <div>

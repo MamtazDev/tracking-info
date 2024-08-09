@@ -136,6 +136,7 @@ export default function Location() {
       locations.map((loc) => (loc.id === id ? { ...loc, [field]: value } : loc))
     );
   };
+  console.log(locations,"SDf")
 
   return (
     <div className="pt-4">
@@ -230,9 +231,8 @@ export default function Location() {
           <div className="flex justify-center sm:justify-end w-full ">
             <Button
               onClick={addLocation}
-              className={`${
-                editingLocation ? "bg-[#64bf36]" : "bg-[#406AEC]"
-              }  h-[30px] w-full sm:w-auto px-1 hover:bg-[#406AEC] hover:opacity-80 transition-all`}
+              className={`${editingLocation ? "bg-[#64bf36]" : "bg-[#406AEC]"
+                }  h-[30px] w-full sm:w-auto px-1 hover:bg-[#406AEC] hover:opacity-80 transition-all`}
             >
               <span>
                 <Icon name={editingLocation ? "check" : "plus"} />

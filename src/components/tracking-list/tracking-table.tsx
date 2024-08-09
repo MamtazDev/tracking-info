@@ -58,7 +58,7 @@ import Contactinfo from "./contact-info";
 
 interface Load {
   id: string;
-  loadid: string;
+  loadId: string;
   date: string;
   driver: string;
   carrier: string;
@@ -74,41 +74,43 @@ interface Load {
   status: string;
 }
 
-const transformData = (data: any[]) => {
+// Transform data function
+const transformData = (data: any[]): Load[] => {
   return data.map((item, index) => ({
     id: `load-${index}`,
     date: item?.contactInfo?.date,
-    loadid: `#${item.contactInfo.loadId}`,
+    loadId: `#${item.contactInfo.loadId}`,
     driver: item.contactInfo.driverName,
     carrier: item.contactInfo.carrierName,
     initialPickup: {
       cityState: item.pickupLocations[0]?.pickuplocation,
       dateTime:
         item.pickupLocations?.length > 0 &&
-        item.pickupLocations[0]?.actualPickupDate &&
-        item.pickupLocations[0]?.actualPickupTime
+          item.pickupLocations[0]?.actualPickupDate &&
+          item.pickupLocations[0]?.actualPickupTime
           ? `${format(
-              new Date(item.pickupLocations[0]?.actualPickupDate),
-              "d MMMM, yyyy"
-            )} at ${item.pickupLocations[0]?.actualPickupTime}`
+            new Date(item.pickupLocations[0]?.actualPickupDate),
+            "d MMMM, yyyy"
+          )} at ${item.pickupLocations[0]?.actualPickupTime}`
           : "",
     },
     finalDropoff: {
       cityState: item.dropoffLocations[0]?.dropOfflocation,
       dateTime:
         item.dropoffLocations?.length > 0 &&
-        item.dropoffLocations[0]?.actualDropOffDate &&
-        item.dropoffLocations[0]?.actualDropOffTime
+          item.dropoffLocations[0]?.actualDropOffDate &&
+          item.dropoffLocations[0]?.actualDropOffTime
           ? `${format(
-              new Date(item.dropoffLocations[0]?.actualDropOffDate),
-              "d MMMM, yyyy"
-            )} at ${item.dropoffLocations[0]?.actualDropOffTime}`
+            new Date(item.dropoffLocations[0]?.actualDropOffDate),
+            "d MMMM, yyyy"
+          )} at ${item.dropoffLocations[0]?.actualDropOffTime}`
           : "",
     },
     status: item?.status,
     loadStatus: item?.status === "draft" ? "Draft" : "Under Process",
   }));
 };
+
 export function TrackingInfoDataTable() {
   const { toast } = useToast();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -122,10 +124,12 @@ export function TrackingInfoDataTable() {
   const deleteTrackingInfo = useStore((state) => state.deleteTrackingInfo);
   const setRecordBeingEdited = useStore((state) => state.setRecordBeingEdited);
 
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [tableData, setTableData] = useState([]);
 
   // Rest Forms on close modal
   useEffect(() => {
@@ -142,55 +146,55 @@ export function TrackingInfoDataTable() {
 
   const columns: ColumnDef<Load>[] = [
     {
-      accessorKey: "date",
+      accessorKey: "createdAt",
       header: "Date",
-      cell: ({ row }) => <div>{row.getValue("date")}</div>,
+      cell: ({ row }) => <div>{row.getValue("createdAt")}</div>,
     },
     {
-      accessorKey: "loadid",
+      accessorKey: "loadId",
       header: "Load ID",
       cell: ({ row }) => (
-        <div className="capitalize">{row.getValue("loadid")}</div>
+        <div className="capitalize">{row.getValue("loadId")}</div>
       ),
     },
     {
-      accessorKey: "driver",
+      accessorKey: "driverName",
       header: "Driver",
-      cell: ({ row }) => <div>{row.getValue("driver")}</div>,
+      cell: ({ row }) => <div>{row.getValue("driverName")}</div>,
     },
     {
-      accessorKey: "carrier",
+      accessorKey: "carrierName",
       header: "Carrier",
-      cell: ({ row }) => <div>{row.getValue("carrier")}</div>,
+      cell: ({ row }) => <div>{row.getValue("carrierName")}</div>,
     },
-    {
-      accessorKey: "initialPickup",
-      header: "Initial Pickup",
-      cell: ({ row }) => {
-        //@ts-ignore
-        const { cityState, dateTime } = row.getValue("initialPickup");
-        return (
-          <div>
-            <div className="text-secondaryblack mb-1.5">{cityState}</div>
-            <div className="text-blue-500 text-xs">{dateTime}</div>
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "finalDropoff",
-      header: "Final Drop-off",
-      cell: ({ row }) => {
-        //@ts-ignore
-        const { cityState, dateTime } = row.getValue("finalDropoff");
-        return (
-          <div>
-            <div className="text-secondaryblack mb-1.5">{cityState}</div>
-            <div className="text-blue-500 text-xs">{dateTime}</div>
-          </div>
-        );
-      },
-    },
+    // {
+    //   accessorKey: "initialPickup",
+    //   header: "Initial Pickup",
+    //   cell: ({ row }) => {
+    //     //@ts-ignore
+    //     const { cityState, dateTime } = row.getValue("initialPickup");
+    //     return (
+    //       <div>
+    //         <div className="text-secondaryblack mb-1.5">{cityState}</div>
+    //         <div className="text-blue-500 text-xs">{dateTime}</div>
+    //       </div>
+    //     );
+    //   },
+    // },
+    // {
+    //   accessorKey: "finalDropoff",
+    //   header: "Final Drop-off",
+    //   cell: ({ row }) => {
+    //     //@ts-ignore
+    //     const { cityState, dateTime } = row.getValue("finalDropoff");
+    //     return (
+    //       <div>
+    //         <div className="text-secondaryblack mb-1.5">{cityState}</div>
+    //         <div className="text-blue-500 text-xs">{dateTime}</div>
+    //       </div>
+    //     );
+    //   },
+    // },
     {
       accessorKey: "tracking",
       header: "Tracking",
@@ -199,6 +203,7 @@ export function TrackingInfoDataTable() {
           row.original.status === "draft" || row.original.status === "publish"
             ? "#b5b3b1"
             : "#406AEC";
+
         return <Clock color={color} />;
       },
     },
@@ -217,7 +222,8 @@ export function TrackingInfoDataTable() {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const loadId = row.original.loadid.replace("#", "");
+        const loadId = "#sdjlfmk";
+        // const loadId = row.original.loadid.replace("#", "");
         const handleDelete = () => {
           deleteTrackingInfo(loadId);
           toast({
@@ -297,6 +303,65 @@ export function TrackingInfoDataTable() {
     onOpen();
   };
 
+  console.log(tableData);
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/trackings');
+        const result = await response.json();
+
+        if (result.success) {
+          setTableData(result.data);
+          // table.setState(result.data)
+          setData(result.data)
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const [formData, setFormData] = useState({
+    loadId: '',
+    driverName: '',
+    driverPhone: '',
+    carrierName: '',
+    carrierPhone: '',
+    notificationEmail: '',
+    notificationPhone: '',
+    status: '',
+    note: '',
+  });
+
+  const handleFormDataChange = (updatedData: any) => {
+    setFormData(prevData => ({ ...prevData, ...updatedData }));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch('/api/tracking', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        console.log('Form submitted successfully:', result.data);
+      } else {
+        console.error('Form submission failed:', result.error);
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    }
+  };
+
   return (
     <>
       <>
@@ -362,20 +427,19 @@ export function TrackingInfoDataTable() {
               </button>
             </div>
           </div>
-
           <Modal
             isOpen={isOpen}
             onOpenChange={onOpenChange}
             size={"5xl"}
             scrollBehavior="inside"
-           className="max-w-7xl rounded-lg"
+            className="max-w-7xl rounded-lg"
           >
             <ModalContent>
               {(onClose) => (
                 <>
                   <ModalBody>
                     <Contactinfo />
-                    <TabComponent />
+                    {/* <TabComponent /> */}
                   </ModalBody>
                 </>
               )}

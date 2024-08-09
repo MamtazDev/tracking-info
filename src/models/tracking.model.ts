@@ -2,7 +2,7 @@ import mongoose, { Document, Model, ObjectId } from "mongoose";
 
 export interface ITracking {
   loadId: string;
-  status: string;
+  loadStatus: string;
   driverName: string;
   driverPhone: string;
   carrierName: string;
@@ -10,6 +10,7 @@ export interface ITracking {
   notificationEmail: string;
   notificationPhone: string;
   note: string;
+  status: string;
 }
 
 export interface ITrackingDocument extends ITracking, Document {
@@ -21,7 +22,7 @@ export interface ITrackingDocument extends ITracking, Document {
 const schema = new mongoose.Schema<ITrackingDocument>(
   {
     loadId: { type: String, trim: true, required: true },
-    status: { type: String, trim: true, required: true },
+    loadStatus: { type: String, trim: true, required: true },
     driverName: { type: String, trim: true, required: true },
     driverPhone: { type: String, trim: true, required: true },
     carrierName: { type: String, trim: true, required: true },
@@ -29,6 +30,7 @@ const schema = new mongoose.Schema<ITrackingDocument>(
     notificationEmail: { type: String, trim: true, required: true },
     notificationPhone: { type: String, trim: true, required: true },
     note: { type: String, trim: true, required: true },
+    status: { type: String, trim: true, required: true },
   },
   {
     timestamps: true,
