@@ -1,7 +1,9 @@
 import Tracking from "@/models/tracking.model";
 
 interface Params {
-  [key: string]: string | string[] | undefined;
+  params: {
+    [key: string]: string | string[] | undefined;
+  };
 }
 
 export async function POST(req: Request) {
