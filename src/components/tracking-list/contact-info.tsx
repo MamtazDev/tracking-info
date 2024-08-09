@@ -59,7 +59,7 @@ const formSchema = z.object({
     }),
   notificationEmail: z.string().email(),
   note: z.string().optional(),
-  status: z.string().default("none")
+  status: z.string().default("none"),
 });
 
 const Contactinfo: React.FC = () => {
@@ -99,14 +99,15 @@ const Contactinfo: React.FC = () => {
   ]);
 
   const handleFormSubmit = async (data: z.infer<typeof formSchema>) => {
-    const isPublished = isDraft
+    const isPublished = isDraft;
+    const isArchived = false
     try {
       const response = await fetch('/api/trackings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...data, locations, isPublished }),
+        body: JSON.stringify({ ...data, locations, isPublished, isArchived }),
       });
 
       const result = await response.json();
@@ -325,8 +326,6 @@ const Contactinfo: React.FC = () => {
                 )}
               />
               <TabComponent locations={locations} setLocations={setLocations} />
-
-
               <div className="flex sm:flex-row  py-10 px-4 flex-col gap-4 justify-start md:justify-end">
                 <button onClick={() => setIsDraft(false)} type="submit" className="flex justify-center gap-2.5 px-6 py-3 text-primaryblue bg-lightblue rounded-[14px] cursor-pointer">
                   <Image src={docempty} alt="" />

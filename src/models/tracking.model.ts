@@ -63,6 +63,7 @@ const schema = new mongoose.Schema<ITrackingDocument>(
     ],
     status: { type: String, trim: true, required: true },
     isPublished: { type: Boolean, required: true },
+    isArchived: { type: Boolean, default: false },
   },
   {
     timestamps: true,

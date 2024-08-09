@@ -25,6 +25,7 @@ export interface ITracking {
   }[];
   status: string;
   isPublished: boolean;
+  isArchived: boolean;
 }
 
 export interface Location {

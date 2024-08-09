@@ -37,10 +37,7 @@ import {
   ModalBody,
   useDisclosure,
 } from "@nextui-org/react";
-
 import { useToast } from "@/components/ui/use-toast";
-import TabComponent from "./tab";
-
 import eye from "../../../public/images/eye.svg";
 import edit from "../../../public/images/edit.svg";
 import archive from "../../../public/images/archive.svg";
@@ -48,7 +45,6 @@ import trash from "../../../public/images/trash.svg";
 import more from "../../../public/images/more.svg";
 import filter from "../../../public/images/filter.svg";
 import search from "../../../public/images/search.svg";
-
 import tracknewload from "../../../public/images/plus-blue.svg";
 import { PaginationDemo } from "./pagination";
 import { format } from "date-fns";
@@ -57,7 +53,7 @@ import { Clock } from "@/icons/Clock";
 import Contactinfo from "./contact-info";
 
 interface Load {
-  id: string;
+  _id: string;
   loadId: string;
   date: string;
   driver: string;
@@ -115,6 +111,7 @@ export function TrackingInfoDataTable() {
   const { toast } = useToast();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [data, setData] = useState<any[]>([]);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const openModal = useStore((state) => state.openModal);
   const setEditableContactInfo = useStore(
@@ -123,7 +120,6 @@ export function TrackingInfoDataTable() {
   const trackingInfo = useStore((state) => state.trackingInfo);
   const deleteTrackingInfo = useStore((state) => state.deleteTrackingInfo);
   const setRecordBeingEdited = useStore((state) => state.setRecordBeingEdited);
-
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -222,18 +218,43 @@ export function TrackingInfoDataTable() {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const loadId = "#sdjlfmk";
-        // const loadId = row.original.loadId.replace("#", "");
-        const handleDelete = () => {
-          deleteTrackingInfo(loadId);
-          toast({
-            title: "Deleted Successfully!",
-          });
+        // let loadId = "#sdjlfmk";
+        const loadId = row.original._id;
+        // const handleDelete = () => {
+        //   deleteTrackingInfo(loadId);
+        //   toast({
+        //     title: "Deleted Successfully!",
+        //   });
+        // };
+        const handleDelete = async () => {
+          console.log(loadId)
+          try {
+            const response = await fetch(`/api/trackings/${loadId}`, {
+              method: 'DELETE',
+            });
+            if (response.ok) {
+              toast({
+                title: "Deleted Successfully!",
+              });
+
+            } else {
+              toast({
+                title: "Failed to delete.",
+              });
+            }
+          } catch (error) {
+            console.error("Failed to delete:", error);
+            toast({
+              title: "An error occurred.",
+            });
+          }
         };
+
         const handleEdit = () => {
           setRecordBeingEdited(loadId);
           handleOpenModal();
         };
+      
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -322,6 +343,7 @@ export function TrackingInfoDataTable() {
     fetchData();
   }, []);
 
+
   const [formData, setFormData] = useState({
     loadId: '',
     driverName: '',
@@ -333,32 +355,7 @@ export function TrackingInfoDataTable() {
     status: '',
     note: '',
   });
-
-  const handleFormDataChange = (updatedData: any) => {
-    setFormData(prevData => ({ ...prevData, ...updatedData }));
-  };
-
-  const handleSubmit = async () => {
-    try {
-      const response = await fetch('/api/tracking', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        console.log('Form submitted successfully:', result.data);
-      } else {
-        console.error('Form submission failed:', result.error);
-      }
-    } catch (error) {
-      console.error('Error submitting form:', error);
-    }
-  };
-
+  
   return (
     <>
       <>
@@ -436,7 +433,6 @@ export function TrackingInfoDataTable() {
                 <>
                   <ModalBody>
                     <Contactinfo />
-                    {/* <TabComponent /> */}
                   </ModalBody>
                 </>
               )}
