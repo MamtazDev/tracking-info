@@ -30,10 +30,9 @@ const TabComponent = ({ locations, setLocations }: Props) => {
       aria-label="Options"
       variant="underlined"
       color="primary"
-   
       classNames={{
         tabList:
-          "gap-6 w-full flex justify-center relative rounded-none p-0 border-b border-divider",
+          "gap-6 lg:w-[1210px] w-full flex justify-center relative rounded-none p-0 border-b border-divider",
         cursor: "w-full bg-[#406AEC]",
         tab: "max-w-fit px-0 h-12",
         tabContent: "group-data-[selected=true]:text-[#406AEC]",

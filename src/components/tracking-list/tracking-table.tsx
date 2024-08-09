@@ -223,7 +223,7 @@ export function TrackingInfoDataTable() {
       enableHiding: false,
       cell: ({ row }) => {
         const loadId = "#sdjlfmk";
-        // const loadId = row.original.loadid.replace("#", "");
+        // const loadId = row.original.loadId.replace("#", "");
         const handleDelete = () => {
           deleteTrackingInfo(loadId);
           toast({
@@ -303,9 +303,6 @@ export function TrackingInfoDataTable() {
     onOpen();
   };
 
-  console.log(tableData);
-
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -380,12 +377,12 @@ export function TrackingInfoDataTable() {
                   className="bg-transparent border-none"
                   placeholder="Search by name or #id"
                   value={
-                    (table.getColumn("loadid")?.getFilterValue() as string) ??
+                    (table.getColumn("loadId")?.getFilterValue() as string) ??
                     ""
                   }
                   onChange={(event) =>
                     table
-                      .getColumn("loadid")
+                      .getColumn("loadId")
                       ?.setFilterValue(event.target.value)
                   }
                 />
@@ -409,10 +406,10 @@ export function TrackingInfoDataTable() {
                 className="bg-transparent border-none"
                 placeholder="Search by name or #id"
                 value={
-                  (table.getColumn("loadid")?.getFilterValue() as string) ?? ""
+                  (table.getColumn("loadId")?.getFilterValue() as string) ?? ""
                 }
                 onChange={(event) =>
-                  table.getColumn("loadid")?.setFilterValue(event.target.value)
+                  table.getColumn("loadId")?.setFilterValue(event.target.value)
                 }
               />
             </div>
