@@ -107,13 +107,14 @@ const Contactinfo: React.FC<IProps> = ({ formValues }) => {
 
   const handleFormSubmit = async (data: z.infer<typeof formSchema>) => {
     const isPublished = isDraft;
+    const isArchived = false;
     try {
       const response = await fetch("/api/trackings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ...data, locations, isPublished }),
+        body: JSON.stringify({ ...data, locations, isPublished, isArchived }),
       });
 
       const result = await response.json();
@@ -335,7 +336,6 @@ const Contactinfo: React.FC<IProps> = ({ formValues }) => {
                 )}
               />
               <TabComponent locations={locations} setLocations={setLocations} />
-
               <div className="flex sm:flex-row  py-10 px-4 flex-col gap-4 justify-start md:justify-end">
                 <button
                   onClick={() => setIsDraft(false)}

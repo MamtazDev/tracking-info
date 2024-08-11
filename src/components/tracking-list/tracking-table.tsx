@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useToast } from "@/components/ui/use-toast";
 import { Modal, ModalBody, ModalContent } from "@nextui-org/react";
 import {
   ColumnDef,
@@ -33,22 +34,20 @@ import {
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
+import { Clock } from "@/icons/Clock";
 import archive from "../../../public/images/archive.svg";
 import edit from "../../../public/images/edit.svg";
 import eye from "../../../public/images/eye.svg";
 import filter from "../../../public/images/filter.svg";
 import more from "../../../public/images/more.svg";
+import tracknewload from "../../../public/images/plus-blue.svg";
 import search from "../../../public/images/search.svg";
 import trash from "../../../public/images/trash.svg";
-
-import { Clock } from "@/icons/Clock";
-import tracknewload from "../../../public/images/plus-blue.svg";
 import Contactinfo from "./contact-info";
 import { PaginationDemo } from "./pagination";
 
 interface Load {
   _id: string;
-  id: string;
   loadId: string;
   date: string;
   driver: string;
@@ -68,7 +67,7 @@ interface Load {
 /* // Transform data function
 const transformData = (data: any[]): Load[] => {
   return data.map((item, index) => ({
-    id: `load-${index}`,
+    _id: `load-${index}`,
     date: item?.contactInfo?.date,
     loadId: `#${item.contactInfo.loadId}`,
     driver: item.contactInfo.driverName,
@@ -110,9 +109,11 @@ export function TrackingInfoDataTable() {
   const trackingInfo = useStore((state) => state.trackingInfo);
   const setRecordBeingEdited = useStore((state) => state.setRecordBeingEdited); */
 
+  const { toast } = useToast();
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [data, setData] = useState<any[]>([]);
   const [editData, setEditData] = useState(null);
+  const [deletedItem, setDeletedItem] = useState<string | null>(null);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -132,7 +133,7 @@ export function TrackingInfoDataTable() {
         console.log(error);
       }
     })();
-  }, []);
+  }, [deletedItem]);
 
   /* useEffect(() => {
     if (!isOpen) {
@@ -233,6 +234,52 @@ export function TrackingInfoDataTable() {
           setOpenModal(true);
         };
 
+        const handleDelete = async () => {
+          try {
+            const response = await fetch(`/api/trackings/${id}`, {
+              method: "DELETE",
+            });
+            setDeletedItem(id);
+            if (response.ok) {
+              toast({
+                title: "Deleted Successfully!",
+              });
+            } else {
+              toast({
+                title: "Failed to delete.",
+              });
+            }
+          } catch (error) {
+            console.error("Failed to delete:", error);
+            toast({
+              title: "An error occurred.",
+            });
+          }
+        };
+
+        const handleArchive = async () => {
+          try {
+            const response = await fetch(`/api/trackings/${id}`, {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                isArchived: true,
+              }),
+            });
+
+            if (response.ok) {
+              toast({ title: "Archived Successfully!" });
+              setData((prevData) => prevData.filter((item) => item._id !== id));
+            } else {
+              toast({ title: "Failed to archive." });
+            }
+          } catch (error) {
+            console.error("Failed to archive:", error);
+            toast({ title: "An error occurred." });
+          }
+        };
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -258,14 +305,17 @@ export function TrackingInfoDataTable() {
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <div className="flex gap-2.5 items-center bg-[#F4F4F5] border border-lightblue rounded-[14px] px-3 py-2.5 w-full text-xs cursor-pointer font-semibold">
+                <div
+                  onClick={handleArchive}
+                  className="flex gap-2.5 items-center bg-[#F4F4F5] border border-lightblue rounded-[14px] px-3 py-2.5 w-full text-xs cursor-pointer font-semibold"
+                >
                   <Image src={archive} alt="" />
                   <p>Archive</p>
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <div
-                  // onClick={handleDelete}
+                  onClick={handleDelete}
                   className="flex gap-2.5 items-center bg-[#FCEAEC] border border-lightblue rounded-[14px] px-3 py-2.5 w-full text-xs cursor-pointer font-semibold"
                 >
                   <Image src={trash} alt="" />
