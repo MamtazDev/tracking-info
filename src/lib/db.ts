@@ -6,9 +6,7 @@ export async function connectToMongoDB() {
   if (cachedConnection) return cachedConnection;
 
   try {
-    const cnx = await mongoose.connect(
-      "mongodb+srv://mamtazfreelancer:f7FcczeDomuZ5F3L@cluster0.6ds5s8q.mongodb.net/tracking"
-    );
+    const cnx = await mongoose.connect(`${process.env.NEXT_PUBLIC_MONGO_URL}`);
     cachedConnection = cnx.connection;
     console.log("Database connection established");
     return cachedConnection;
