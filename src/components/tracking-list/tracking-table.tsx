@@ -113,7 +113,7 @@ export function TrackingInfoDataTable() {
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [data, setData] = useState<any[]>([]);
   const [editData, setEditData] = useState(null);
-  const [deletedItem, setDeletedItem] = useState<string | null>(null);
+  const [refetch, setRefetch] = useState("");
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -133,7 +133,7 @@ export function TrackingInfoDataTable() {
         console.log(error);
       }
     })();
-  }, [deletedItem]);
+  }, [refetch]);
 
   /* useEffect(() => {
     if (!isOpen) {
@@ -239,7 +239,7 @@ export function TrackingInfoDataTable() {
             const response = await fetch(`/api/trackings/${id}`, {
               method: "DELETE",
             });
-            setDeletedItem(id);
+            setRefetch(new Date().toISOString());
             if (response.ok) {
               toast({
                 title: "Deleted Successfully!",
@@ -468,7 +468,11 @@ export function TrackingInfoDataTable() {
               {() => {
                 return (
                   <ModalBody>
-                    <Contactinfo formValues={editData} />
+                    <Contactinfo
+                      formValues={editData}
+                      setOpenModal={setOpenModal}
+                      setRefetch={setRefetch}
+                    />
                   </ModalBody>
                 );
               }}

@@ -64,9 +64,15 @@ const formSchema = z.object({
 
 type IProps = {
   formValues: Record<string, any> | null;
+  setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
+  setRefetch: React.Dispatch<React.SetStateAction<string>>;
 };
 
-const Contactinfo: React.FC<IProps> = ({ formValues }) => {
+const Contactinfo: React.FC<IProps> = ({
+  formValues,
+  setOpenModal,
+  setRefetch,
+}) => {
   const isOpen = useStore((state) => state.isOpen);
 
   const recordBeingEdited = useStore((state) => state.recordBeingEdited);
@@ -76,10 +82,12 @@ const Contactinfo: React.FC<IProps> = ({ formValues }) => {
     (state) => state.setEditableContactInfo
   );
 
-  // console.log(formValues.locations);
+  // console.log(formValues?.locations);
 
   const [isDraft, setIsDraft] = useState(false);
-  const [locations, setLocations] = useState<Location[]>([]);
+  const [locations, setLocations] = useState<Location[]>(
+    formValues?.locations || []
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -118,7 +126,7 @@ const Contactinfo: React.FC<IProps> = ({ formValues }) => {
       });
 
       const result = await response.json();
-      console.log(result);
+
       if (result.success) {
         const isDraft = result.status === "draft";
 
@@ -130,6 +138,8 @@ const Contactinfo: React.FC<IProps> = ({ formValues }) => {
             ? "Your form has been saved as draft."
             : "Your form has been submitted.",
         });
+        setOpenModal(false);
+        setRefetch(new Date().toISOString());
       } else {
         alert("Error submitting data");
       }

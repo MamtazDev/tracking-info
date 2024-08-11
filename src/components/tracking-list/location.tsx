@@ -291,13 +291,13 @@ export default function LocationComp({ locations, setLocations }: Props) {
                       </span>
                     </div>
                   </div>
-                  {/* Actual date time */}
+
                   <div className="bg-[#F7FAFC] px-8 py-3 space-y-2 rounded-xl">
                     <div className="flex items-center">
                       <span>
                         <Icon name="calendar" width={10} height={10} />
                       </span>
-                      <DateInput
+                      {/* <DateInput
                         value={location.actualDate}
                         onChange={(date) =>
                           updateActualDateTime(location.id, "actualDate", date)
@@ -310,20 +310,17 @@ export default function LocationComp({ locations, setLocations }: Props) {
                         }}
                         isInvalid={false}
                         size="sm"
-                      />
+                      /> */}
                     </div>
+
                     <div className="flex items-center">
                       <span>
                         <Icon name="clock" width={10} height={10} />
                       </span>
-                      <TimeInput
+                      {/* <TimeInput
                         value={location.actualTime}
                         onChange={(time) =>
-                          updateActualDateTime(
-                            location.id,
-                            "actualTime",
-                            time as Time
-                          )
+                          updateActualDateTime(location.id, "actualTime", time)
                         }
                         classNames={{
                           input:
@@ -333,7 +330,7 @@ export default function LocationComp({ locations, setLocations }: Props) {
                         }}
                         size="sm"
                         hourCycle={24}
-                      />
+                      /> */}
                     </div>
                   </div>
                   <div className="hidden md:flex items-center mt-2">
@@ -385,21 +382,6 @@ export default function LocationComp({ locations, setLocations }: Props) {
           </div>
         ))}
       </div>
-
-      {/* <div className="flex sm:flex-row  py-10 px-4 flex-col gap-4 justify-start md:justify-end">
-        <button type="submit" className="flex justify-center gap-2.5 px-6 py-3 text-primaryblue bg-lightblue rounded-[14px] cursor-pointer">
-          <Image src={docempty} alt="" />
-          <p>Save as Draft</p>
-        </button>
-        <button
-          type="submit"
-          className="flex justify-center gap-2.5 px-6 py-3 text-white bg-primaryblue rounded-[14px] cursor-pointer"
-        >
-          <Image src={ticksqure} alt="" />
-          <p>Publish</p>
-        </button>
-        
-      </div> */}
     </div>
   );
 }
