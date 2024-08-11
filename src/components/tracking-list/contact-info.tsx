@@ -62,10 +62,12 @@ const formSchema = z.object({
   status: z.string().default("none"),
 });
 
-const Contactinfo: React.FC = () => {
+type IProps = {
+  formValues: Record<string, any> | null;
+};
+
+const Contactinfo: React.FC<IProps> = ({ formValues }) => {
   const isOpen = useStore((state) => state.isOpen);
-  const id = useStore((state) => state.recordBeingEdited);
-  const [isLoading, setIsLoading] = useState(id ? false : true);
 
   const recordBeingEdited = useStore((state) => state.recordBeingEdited);
   const setRecordBeingEdited = useStore((state) => state.setRecordBeingEdited);
@@ -74,36 +76,16 @@ const Contactinfo: React.FC = () => {
     (state) => state.setEditableContactInfo
   );
 
+  // console.log(formValues.locations);
+
   const [isDraft, setIsDraft] = useState(false);
   const [locations, setLocations] = useState<Location[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: editableContactInfo || {},
+    defaultValues: formValues || {},
     mode: "onChange",
   });
-
-  useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true);
-      try {
-        const response = await fetch(`/api/trackings/${id}`); // Replace with your API endpoint
-        const result = await response.json();
-
-        if (result.success) {
-          form.reset(result.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch contact info:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    if (id) {
-      fetchData();
-    }
-  }, [id]);
 
   useEffect(() => {
     if (isOpen) {
@@ -154,10 +136,6 @@ const Contactinfo: React.FC = () => {
       console.error("Network error:", error);
     }
   };
-
-  // if (isLoading) {
-  //   return <>loading</>;
-  // }
 
   return (
     <div>
@@ -331,7 +309,6 @@ const Contactinfo: React.FC = () => {
 
               <FormField
                 control={form.control}
-                //@ts-ignore
                 name={"note"}
                 render={({ field }) => (
                   <FormItem>

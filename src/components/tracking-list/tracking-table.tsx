@@ -16,12 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  useDisclosure,
-} from "@nextui-org/react";
+import { Modal, ModalBody, ModalContent } from "@nextui-org/react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -38,8 +33,6 @@ import {
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import { useToast } from "@/components/ui/use-toast";
-
 import archive from "../../../public/images/archive.svg";
 import edit from "../../../public/images/edit.svg";
 import eye from "../../../public/images/eye.svg";
@@ -49,13 +42,12 @@ import search from "../../../public/images/search.svg";
 import trash from "../../../public/images/trash.svg";
 
 import { Clock } from "@/icons/Clock";
-import useStore from "@/lib/store";
-import { format } from "date-fns";
 import tracknewload from "../../../public/images/plus-blue.svg";
 import Contactinfo from "./contact-info";
 import { PaginationDemo } from "./pagination";
 
 interface Load {
+  _id: string;
   id: string;
   loadId: string;
   date: string;
@@ -73,7 +65,7 @@ interface Load {
   status: string;
 }
 
-// Transform data function
+/* // Transform data function
 const transformData = (data: any[]): Load[] => {
   return data.map((item, index) => ({
     id: `load-${index}`,
@@ -108,34 +100,41 @@ const transformData = (data: any[]): Load[] => {
     status: item?.status,
     loadStatus: item?.status === "draft" ? "Draft" : "Under Process",
   }));
-};
+}; */
 
 export function TrackingInfoDataTable() {
-  const { toast } = useToast();
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-
-  const [isOpenModal, setOpenModal] = useState(false);
-  const [data, setData] = useState<any[]>([]);
-
-  const [editData, setEditData] = useState(null);
-  console.log(editData);
-
-  const openModal = useStore((state) => state.openModal);
+  /* const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const setEditableContactInfo = useStore(
     (state) => state.setEditableContactInfo
   );
   const trackingInfo = useStore((state) => state.trackingInfo);
-  const deleteTrackingInfo = useStore((state) => state.deleteTrackingInfo);
-  const setRecordBeingEdited = useStore((state) => state.setRecordBeingEdited);
+  const setRecordBeingEdited = useStore((state) => state.setRecordBeingEdited); */
+
+  const [openModal, setOpenModal] = useState<boolean>(false);
+  const [data, setData] = useState<any[]>([]);
+  const [editData, setEditData] = useState(null);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [tableData, setTableData] = useState([]);
 
-  // Rest Forms on close modal
   useEffect(() => {
+    (async () => {
+      try {
+        const response = await fetch("/api/trackings");
+        const result = await response.json();
+
+        if (result.success) {
+          setData(result.data);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
+
+  /* useEffect(() => {
     if (!isOpen) {
       setRecordBeingEdited("");
       setEditableContactInfo("");
@@ -145,7 +144,7 @@ export function TrackingInfoDataTable() {
   useEffect(() => {
     const transformedData = transformData(trackingInfo);
     setData(transformedData);
-  }, [isOpen, setRecordBeingEdited, trackingInfo]);
+  }, [isOpen, setRecordBeingEdited, trackingInfo]); */
 
   const columns: ColumnDef<Load>[] = [
     {
@@ -227,19 +226,11 @@ export function TrackingInfoDataTable() {
       cell: ({ row }) => {
         const id = row.original._id;
 
-        /* const handleDelete = () => {
-          deleteTrackingInfo(loadId);
-          toast({
-            title: "Deleted Successfully!",
-          });
-        }; */
         const handleEdit = async () => {
-          // setRecordBeingEdited(id);
-          const response = await fetch(`/api/trackings/${id}`); // Replace with your API endpoint
+          const response = await fetch(`/api/trackings/${id}`);
           const result = await response.json();
-
           setEditData(result.data);
-          handleOpenModal();
+          setOpenModal(true);
         };
 
         return (
@@ -307,28 +298,9 @@ export function TrackingInfoDataTable() {
     },
   });
 
-  const handleOpenModal = () => {
+  /*  const handleOpenModal = () => {
     onOpen();
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch("/api/trackings");
-        const result = await response.json();
-
-        if (result.success) {
-          setTableData(result.data);
-          // table.setState(result.data)
-          setData(result.data);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   const [formData, setFormData] = useState({
     loadId: "",
@@ -365,7 +337,7 @@ export function TrackingInfoDataTable() {
     } catch (error) {
       console.error("Error submitting form:", error);
     }
-  };
+  }; */
 
   return (
     <>
@@ -397,7 +369,7 @@ export function TrackingInfoDataTable() {
               </div>
             </div>
             <div className="flex justify-end">
-              <button onClick={onOpen}>
+              <button onClick={() => setOpenModal(true)}>
                 <div className="flex justify-center items-center gap-2.5 bg-lightblue rounded-[14px] border-blue-200 py-[14px] px-4 cursor-pointer max-w-[190px]">
                   <Image src={tracknewload} alt="Track new Load" />
                   <p className="text-secondaryblack text-sm font-semibold">
@@ -425,7 +397,7 @@ export function TrackingInfoDataTable() {
               <Image src={filter} alt="Filter" />
             </div>
             <div>
-              <button onClick={onOpen}>
+              <button onClick={() => setOpenModal(true)}>
                 <div className="flex justify-center items-center rounded-[14px] border-blue-200 py-[10px] px-2 cursor-pointer col-span-1">
                   <Image src={tracknewload} alt="Track new Load" />
                 </div>
@@ -433,22 +405,21 @@ export function TrackingInfoDataTable() {
             </div>
           </div>
           <Modal
-            // isOpen={isOpen}
-            isOpen={isOpenModal}
-            onOpenChange={onOpenChange}
+            isOpen={openModal}
+            onOpenChange={() => {
+              setOpenModal(false);
+              setEditData(null);
+            }}
             size={"5xl"}
             scrollBehavior="inside"
             className="max-w-7xl rounded-lg"
           >
             <ModalContent>
-              {(onClose) => {
+              {() => {
                 return (
-                  <>
-                    <ModalBody>
-                      <Contactinfo />
-                      {/* <TabComponent /> */}
-                    </ModalBody>
-                  </>
+                  <ModalBody>
+                    <Contactinfo formValues={editData} />
+                  </ModalBody>
                 );
               }}
             </ModalContent>
