@@ -73,7 +73,7 @@ interface Load {
 // Transform data function
 const transformData = (data: any[]): Load[] => {
   return data.map((item, index) => ({
-    id: `load-${index}`,
+    _id: `load-${index}`,
     date: item?.contactInfo?.date,
     loadId: `#${item.contactInfo.loadId}`,
     driver: item.contactInfo.driverName,
