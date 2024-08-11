@@ -1,16 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Icon } from "@/icons";
 import { Badge } from "@/components/ui/badge";
-import { DateInput, TimeInput } from "@nextui-org/react";
-import { CalendarDate, DateValue, Time } from "@internationalized/date";
-import Image from "next/image";
-import docempty from "../../../public/images/document.svg";
-import ticksqure from "../../../public/images/tick-square.svg";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Icon } from "@/icons";
 import { Location } from "@/interface";
+import { CalendarDate, DateValue, Time } from "@internationalized/date";
+import { DateInput, TimeInput } from "@nextui-org/react";
+import React, { useState } from "react";
 
 const formatDate = (date: DateValue) => {
   const month = String(date.month).padStart(2, "0");
@@ -26,9 +23,9 @@ const formatTime = (time: Time) => {
 };
 
 type Props = {
-  locations: Location[]
-  setLocations: React.Dispatch<React.SetStateAction<Location[]>>
-}
+  locations: Location[];
+  setLocations: React.Dispatch<React.SetStateAction<Location[]>>;
+};
 
 export default function LocationComp({ locations, setLocations }: Props) {
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
@@ -127,7 +124,6 @@ export default function LocationComp({ locations, setLocations }: Props) {
       locations.map((loc) => (loc.id === id ? { ...loc, [field]: value } : loc))
     );
   };
-  console.log(locations,"SDf")
 
   return (
     <div className="pt-4">
@@ -223,8 +219,9 @@ export default function LocationComp({ locations, setLocations }: Props) {
             <Button
               type="button"
               onClick={addLocation}
-              className={`${editingLocation ? "bg-[#64bf36]" : "bg-[#406AEC]"
-                }  h-[30px] w-full sm:w-auto px-1 hover:bg-[#406AEC] hover:opacity-80 transition-all`}
+              className={`${
+                editingLocation ? "bg-[#64bf36]" : "bg-[#406AEC]"
+              }  h-[30px] w-full sm:w-auto px-1 hover:bg-[#406AEC] hover:opacity-80 transition-all`}
             >
               <span>
                 <Icon name={editingLocation ? "check" : "plus"} />
@@ -294,13 +291,13 @@ export default function LocationComp({ locations, setLocations }: Props) {
                       </span>
                     </div>
                   </div>
-                  {/* Actual date time */}
+
                   <div className="bg-[#F7FAFC] px-8 py-3 space-y-2 rounded-xl">
                     <div className="flex items-center">
                       <span>
                         <Icon name="calendar" width={10} height={10} />
                       </span>
-                      <DateInput
+                      {/* <DateInput
                         value={location.actualDate}
                         onChange={(date) =>
                           updateActualDateTime(location.id, "actualDate", date)
@@ -313,20 +310,17 @@ export default function LocationComp({ locations, setLocations }: Props) {
                         }}
                         isInvalid={false}
                         size="sm"
-                      />
+                      /> */}
                     </div>
+
                     <div className="flex items-center">
                       <span>
                         <Icon name="clock" width={10} height={10} />
                       </span>
-                      <TimeInput
+                      {/* <TimeInput
                         value={location.actualTime}
                         onChange={(time) =>
-                          updateActualDateTime(
-                            location.id,
-                            "actualTime",
-                            time as Time
-                          )
+                          updateActualDateTime(location.id, "actualTime", time)
                         }
                         classNames={{
                           input:
@@ -336,7 +330,7 @@ export default function LocationComp({ locations, setLocations }: Props) {
                         }}
                         size="sm"
                         hourCycle={24}
-                      />
+                      /> */}
                     </div>
                   </div>
                   <div className="hidden md:flex items-center mt-2">
@@ -388,21 +382,6 @@ export default function LocationComp({ locations, setLocations }: Props) {
           </div>
         ))}
       </div>
-
-      {/* <div className="flex sm:flex-row  py-10 px-4 flex-col gap-4 justify-start md:justify-end">
-        <button type="submit" className="flex justify-center gap-2.5 px-6 py-3 text-primaryblue bg-lightblue rounded-[14px] cursor-pointer">
-          <Image src={docempty} alt="" />
-          <p>Save as Draft</p>
-        </button>
-        <button
-          type="submit"
-          className="flex justify-center gap-2.5 px-6 py-3 text-white bg-primaryblue rounded-[14px] cursor-pointer"
-        >
-          <Image src={ticksqure} alt="" />
-          <p>Publish</p>
-        </button>
-        
-      </div> */}
     </div>
   );
 }

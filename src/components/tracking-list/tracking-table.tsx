@@ -1,20 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
-import {
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-  ColumnDef,
-  SortingState,
-  ColumnFiltersState,
-  VisibilityState,
-  RowSelectionState,
-} from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -31,26 +16,35 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Modal,
-  ModalContent,
-  ModalBody,
-  useDisclosure,
-} from "@nextui-org/react";
 import { useToast } from "@/components/ui/use-toast";
-import eye from "../../../public/images/eye.svg";
-import edit from "../../../public/images/edit.svg";
-import archive from "../../../public/images/archive.svg";
-import trash from "../../../public/images/trash.svg";
-import more from "../../../public/images/more.svg";
-import filter from "../../../public/images/filter.svg";
-import search from "../../../public/images/search.svg";
-import tracknewload from "../../../public/images/plus-blue.svg";
-import { PaginationDemo } from "./pagination";
-import { format } from "date-fns";
-import useStore from "@/lib/store";
+import { Modal, ModalBody, ModalContent } from "@nextui-org/react";
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  RowSelectionState,
+  SortingState,
+  useReactTable,
+  VisibilityState,
+} from "@tanstack/react-table";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+
 import { Clock } from "@/icons/Clock";
+import archive from "../../../public/images/archive.svg";
+import edit from "../../../public/images/edit.svg";
+import eye from "../../../public/images/eye.svg";
+import filter from "../../../public/images/filter.svg";
+import more from "../../../public/images/more.svg";
+import tracknewload from "../../../public/images/plus-blue.svg";
+import search from "../../../public/images/search.svg";
+import trash from "../../../public/images/trash.svg";
 import Contactinfo from "./contact-info";
+import { PaginationDemo } from "./pagination";
 
 interface Load {
   _id: string;
@@ -70,7 +64,7 @@ interface Load {
   status: string;
 }
 
-// Transform data function
+/* // Transform data function
 const transformData = (data: any[]): Load[] => {
   return data.map((item, index) => ({
     _id: `load-${index}`,
@@ -82,53 +76,66 @@ const transformData = (data: any[]): Load[] => {
       cityState: item.pickupLocations[0]?.pickuplocation,
       dateTime:
         item.pickupLocations?.length > 0 &&
-          item.pickupLocations[0]?.actualPickupDate &&
-          item.pickupLocations[0]?.actualPickupTime
+        item.pickupLocations[0]?.actualPickupDate &&
+        item.pickupLocations[0]?.actualPickupTime
           ? `${format(
-            new Date(item.pickupLocations[0]?.actualPickupDate),
-            "d MMMM, yyyy"
-          )} at ${item.pickupLocations[0]?.actualPickupTime}`
+              new Date(item.pickupLocations[0]?.actualPickupDate),
+              "d MMMM, yyyy"
+            )} at ${item.pickupLocations[0]?.actualPickupTime}`
           : "",
     },
     finalDropoff: {
       cityState: item.dropoffLocations[0]?.dropOfflocation,
       dateTime:
         item.dropoffLocations?.length > 0 &&
-          item.dropoffLocations[0]?.actualDropOffDate &&
-          item.dropoffLocations[0]?.actualDropOffTime
+        item.dropoffLocations[0]?.actualDropOffDate &&
+        item.dropoffLocations[0]?.actualDropOffTime
           ? `${format(
-            new Date(item.dropoffLocations[0]?.actualDropOffDate),
-            "d MMMM, yyyy"
-          )} at ${item.dropoffLocations[0]?.actualDropOffTime}`
+              new Date(item.dropoffLocations[0]?.actualDropOffDate),
+              "d MMMM, yyyy"
+            )} at ${item.dropoffLocations[0]?.actualDropOffTime}`
           : "",
     },
     status: item?.status,
     loadStatus: item?.status === "draft" ? "Draft" : "Under Process",
   }));
-};
+}; */
 
 export function TrackingInfoDataTable() {
-  const { toast } = useToast();
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [data, setData] = useState<any[]>([]);
-  const [deletedItem, setDeletedItem] = useState<string | null>(null);
-
-  const openModal = useStore((state) => state.openModal);
+  /* const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const setEditableContactInfo = useStore(
     (state) => state.setEditableContactInfo
   );
   const trackingInfo = useStore((state) => state.trackingInfo);
-  const deleteTrackingInfo = useStore((state) => state.deleteTrackingInfo);
-  const setRecordBeingEdited = useStore((state) => state.setRecordBeingEdited);
+  const setRecordBeingEdited = useStore((state) => state.setRecordBeingEdited); */
+
+  const { toast } = useToast();
+  const [openModal, setOpenModal] = useState<boolean>(false);
+  const [data, setData] = useState<any[]>([]);
+  const [editData, setEditData] = useState(null);
+  const [refetch, setRefetch] = useState("");
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [tableData, setTableData] = useState([]);
 
-  // Rest Forms on close modal
   useEffect(() => {
+    (async () => {
+      try {
+        const response = await fetch("/api/trackings");
+        const result = await response.json();
+
+        if (result.success) {
+          setData(result.data);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, [refetch]);
+
+  /* useEffect(() => {
     if (!isOpen) {
       setRecordBeingEdited("");
       setEditableContactInfo("");
@@ -138,7 +145,7 @@ export function TrackingInfoDataTable() {
   useEffect(() => {
     const transformedData = transformData(trackingInfo);
     setData(transformedData);
-  }, [isOpen, setRecordBeingEdited, trackingInfo]);
+  }, [isOpen, setRecordBeingEdited, trackingInfo]); */
 
   const columns: ColumnDef<Load>[] = [
     {
@@ -218,18 +225,25 @@ export function TrackingInfoDataTable() {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const loadId = row.original._id;
+        const id = row.original._id;
+
+        const handleEdit = async () => {
+          const response = await fetch(`/api/trackings/${id}`);
+          const result = await response.json();
+          setEditData(result.data);
+          setOpenModal(true);
+        };
+
         const handleDelete = async () => {
           try {
-            const response = await fetch(`/api/trackings/${loadId}`, {
-              method: 'DELETE',
+            const response = await fetch(`/api/trackings/${id}`, {
+              method: "DELETE",
             });
-            setDeletedItem(loadId)
+            setRefetch(new Date().toISOString());
             if (response.ok) {
               toast({
                 title: "Deleted Successfully!",
               });
-
             } else {
               toast({
                 title: "Failed to delete.",
@@ -243,17 +257,12 @@ export function TrackingInfoDataTable() {
           }
         };
 
-        const handleEdit = () => {
-          setRecordBeingEdited(loadId);
-          handleOpenModal();
-        };
-
         const handleArchive = async () => {
           try {
-            const response = await fetch(`/api/trackings/${loadId}`, {
-              method: 'PATCH',
+            const response = await fetch(`/api/trackings/${id}`, {
+              method: "PATCH",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
               body: JSON.stringify({
                 isArchived: true,
@@ -261,20 +270,14 @@ export function TrackingInfoDataTable() {
             });
 
             if (response.ok) {
-              toast({
-                title: "Archived Successfully!",
-              });
-              setData((prevData) => prevData.filter(item => item._id !== loadId));
+              toast({ title: "Archived Successfully!" });
+              setData((prevData) => prevData.filter((item) => item._id !== id));
             } else {
-              toast({
-                title: "Failed to archive.",
-              });
+              toast({ title: "Failed to archive." });
             }
           } catch (error) {
             console.error("Failed to archive:", error);
-            toast({
-              title: "An error occurred.",
-            });
+            toast({ title: "An error occurred." });
           }
         };
         return (
@@ -304,7 +307,8 @@ export function TrackingInfoDataTable() {
               <DropdownMenuItem>
                 <div
                   onClick={handleArchive}
-                  className="flex gap-2.5 items-center bg-[#F4F4F5] border border-lightblue rounded-[14px] px-3 py-2.5 w-full text-xs cursor-pointer font-semibold">
+                  className="flex gap-2.5 items-center bg-[#F4F4F5] border border-lightblue rounded-[14px] px-3 py-2.5 w-full text-xs cursor-pointer font-semibold"
+                >
                   <Image src={archive} alt="" />
                   <p>Archive</p>
                 </div>
@@ -344,29 +348,46 @@ export function TrackingInfoDataTable() {
     },
   });
 
-  const handleOpenModal = () => {
+  /*  const handleOpenModal = () => {
     onOpen();
   };
 
+  const [formData, setFormData] = useState({
+    loadId: "",
+    driverName: "",
+    driverPhone: "",
+    carrierName: "",
+    carrierPhone: "",
+    notificationEmail: "",
+    notificationPhone: "",
+    status: "",
+    note: "",
+  });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('/api/trackings');
-        const result = await response.json();
+  const handleFormDataChange = (updatedData: any) => {
+    setFormData((prevData) => ({ ...prevData, ...updatedData }));
+  };
 
-        if (result.success) {
-          const filteredData = result.data.filter((item: any) => !item.isArchived);
-          setTableData(filteredData);
-          setData(filteredData);
-        }
-      } catch (error) {
-        console.log(error);
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch("/api/tracking", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        console.log("Form submitted successfully:", result.data);
+      } else {
+        console.error("Form submission failed:", result.error);
       }
-    };
-    fetchData();
-  }, [deletedItem]);
-
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
+  }; */
 
   return (
     <>
@@ -398,7 +419,7 @@ export function TrackingInfoDataTable() {
               </div>
             </div>
             <div className="flex justify-end">
-              <button onClick={onOpen}>
+              <button onClick={() => setOpenModal(true)}>
                 <div className="flex justify-center items-center gap-2.5 bg-lightblue rounded-[14px] border-blue-200 py-[14px] px-4 cursor-pointer max-w-[190px]">
                   <Image src={tracknewload} alt="Track new Load" />
                   <p className="text-secondaryblack text-sm font-semibold">
@@ -426,7 +447,7 @@ export function TrackingInfoDataTable() {
               <Image src={filter} alt="Filter" />
             </div>
             <div>
-              <button onClick={onOpen}>
+              <button onClick={() => setOpenModal(true)}>
                 <div className="flex justify-center items-center rounded-[14px] border-blue-200 py-[10px] px-2 cursor-pointer col-span-1">
                   <Image src={tracknewload} alt="Track new Load" />
                 </div>
@@ -434,20 +455,27 @@ export function TrackingInfoDataTable() {
             </div>
           </div>
           <Modal
-            isOpen={isOpen}
-            onOpenChange={onOpenChange}
+            isOpen={openModal}
+            onOpenChange={() => {
+              setOpenModal(false);
+              setEditData(null);
+            }}
             size={"5xl"}
             scrollBehavior="inside"
             className="max-w-7xl rounded-lg"
           >
             <ModalContent>
-              {(onClose) => (
-                <>
+              {() => {
+                return (
                   <ModalBody>
-                    <Contactinfo />
+                    <Contactinfo
+                      formValues={editData}
+                      setOpenModal={setOpenModal}
+                      setRefetch={setRefetch}
+                    />
                   </ModalBody>
-                </>
-              )}
+                );
+              }}
             </ModalContent>
           </Modal>
           <div className="main-table">

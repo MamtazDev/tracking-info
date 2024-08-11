@@ -1,15 +1,5 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import user from "../../../public/images/user.svg";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import InputMask from "react-input-mask";
-import { toast } from "@/components/ui/use-toast";
-import docempty from "../../../public/images/document.svg";
-import ticksqure from "../../../public/images/tick-square.svg";
 import {
   Form,
   FormControl,
@@ -18,15 +8,25 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
 import { contactinfo } from "@/data";
+import { Location } from "@/interface";
 import useStore from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import InputMask from "react-input-mask";
+import { z } from "zod";
+import documentText from "../../../public/images/document-text.svg";
+import docempty from "../../../public/images/document.svg";
 import phone from "../../../public/images/phone.svg";
 import avatar from "../../../public/images/profile-blue.svg";
-import documentText from "../../../public/images/document-text.svg";
+import ticksqure from "../../../public/images/tick-square.svg";
+import user from "../../../public/images/user.svg";
 import { Label } from "../ui/label";
 import TabComponent from "./tab";
-import { Location } from "@/interface";
 
 const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
 
@@ -62,8 +62,19 @@ const formSchema = z.object({
   status: z.string().default("none"),
 });
 
-const Contactinfo: React.FC = () => {
+type IProps = {
+  formValues: Record<string, any> | null;
+  setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
+  setRefetch: React.Dispatch<React.SetStateAction<string>>;
+};
+
+const Contactinfo: React.FC<IProps> = ({
+  formValues,
+  setOpenModal,
+  setRefetch,
+}) => {
   const isOpen = useStore((state) => state.isOpen);
+
   const recordBeingEdited = useStore((state) => state.recordBeingEdited);
   const setRecordBeingEdited = useStore((state) => state.setRecordBeingEdited);
   const editableContactInfo = useStore((state) => state.editableContactInfo);
@@ -71,12 +82,16 @@ const Contactinfo: React.FC = () => {
     (state) => state.setEditableContactInfo
   );
 
-  const [isDraft, setIsDraft] = useState(false)
-  const [locations, setLocations] = useState<Location[]>([]);
+  // console.log(formValues?.locations);
+
+  const [isDraft, setIsDraft] = useState(false);
+  const [locations, setLocations] = useState<Location[]>(
+    formValues?.locations || []
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: editableContactInfo || {},
+    defaultValues: formValues || {},
     mode: "onChange",
   });
 
@@ -100,20 +115,20 @@ const Contactinfo: React.FC = () => {
 
   const handleFormSubmit = async (data: z.infer<typeof formSchema>) => {
     const isPublished = isDraft;
-    const isArchived = false
+    const isArchived = false;
     try {
-      const response = await fetch('/api/trackings', {
-        method: 'POST',
+      const response = await fetch("/api/trackings", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ ...data, locations, isPublished, isArchived }),
       });
 
       const result = await response.json();
-      console.log(result)
+
       if (result.success) {
-        const isDraft = result.status === 'draft'
+        const isDraft = result.status === "draft";
 
         toast({
           title: isDraft
@@ -123,11 +138,13 @@ const Contactinfo: React.FC = () => {
             ? "Your form has been saved as draft."
             : "Your form has been submitted.",
         });
+        setOpenModal(false);
+        setRefetch(new Date().toISOString());
       } else {
-        alert('Error submitting data');
+        alert("Error submitting data");
       }
     } catch (error) {
-      console.error('Network error:', error);
+      console.error("Network error:", error);
     }
   };
 
@@ -143,9 +160,7 @@ const Contactinfo: React.FC = () => {
           </div>
 
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleFormSubmit)}
-            >
+            <form onSubmit={form.handleSubmit(handleFormSubmit)}>
               <div className="mb-4 ml-7 md:hidden">
                 <div className="flex items-center space-x-4">
                   <Label className="text-muted-foreground">Status</Label>
@@ -170,7 +185,7 @@ const Contactinfo: React.FC = () => {
                           <div
                             className={cn(
                               item.type !== "select" &&
-                              "flex items-center gap-2.5 my-3 rounded-[14px] border border-[#F4F4F5] px-4 py-2 cursor-pointer w-full",
+                                "flex items-center gap-2.5 my-3 rounded-[14px] border border-[#F4F4F5] px-4 py-2 cursor-pointer w-full",
                               isFirstItem ? "md:col-span-2" : ""
                             )}
                           >
@@ -215,7 +230,13 @@ const Contactinfo: React.FC = () => {
                               <Image src={item.icon} alt="" />
                             )}
                           </div>
-                          <span className={item.type === "select" ? "hidden md:block" : "block"}>
+                          <span
+                            className={
+                              item.type === "select"
+                                ? "hidden md:block"
+                                : "block"
+                            }
+                          >
                             <FormMessage className="text-xs font-normal text-red-400 ml-[29px] form-message" />
                           </span>
                         </FormItem>
@@ -299,7 +320,6 @@ const Contactinfo: React.FC = () => {
 
               <FormField
                 control={form.control}
-                //@ts-ignore
                 name={"note"}
                 render={({ field }) => (
                   <FormItem>
@@ -327,7 +347,11 @@ const Contactinfo: React.FC = () => {
               />
               <TabComponent locations={locations} setLocations={setLocations} />
               <div className="flex sm:flex-row  py-10 px-4 flex-col gap-4 justify-start md:justify-end">
-                <button onClick={() => setIsDraft(false)} type="submit" className="flex justify-center gap-2.5 px-6 py-3 text-primaryblue bg-lightblue rounded-[14px] cursor-pointer">
+                <button
+                  onClick={() => setIsDraft(false)}
+                  type="submit"
+                  className="flex justify-center gap-2.5 px-6 py-3 text-primaryblue bg-lightblue rounded-[14px] cursor-pointer"
+                >
                   <Image src={docempty} alt="" />
                   <p>Save as Draft</p>
                 </button>
@@ -339,7 +363,6 @@ const Contactinfo: React.FC = () => {
                   <Image src={ticksqure} alt="" />
                   <p>Publish</p>
                 </button>
-
               </div>
             </form>
           </Form>
