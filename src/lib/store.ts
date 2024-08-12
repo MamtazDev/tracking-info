@@ -28,7 +28,7 @@ interface TrackingInfo {
   contactInfo: ContactInfo;
   pickupLocations: Location[];
   dropoffLocations: Location[];
-  status: 'draft' | 'publish'; // Add status field
+  status: 'draft' | 'publish';
 }
 
 interface StoreState {
@@ -80,7 +80,6 @@ const useStore = create<StoreState>((set, get) => ({
         ),
       };
     }
-
     return {
       trackingInfo: [
         ...state.trackingInfo,

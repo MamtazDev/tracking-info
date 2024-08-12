@@ -81,9 +81,7 @@ const Contactinfo: React.FC<IProps> = ({
   const setEditableContactInfo = useStore(
     (state) => state.setEditableContactInfo
   );
-
-  // console.log(formValues?.locations);
-
+  
   const [isDraft, setIsDraft] = useState(false);
   const [locations, setLocations] = useState<Location[]>(
     formValues?.locations || []
@@ -116,9 +114,15 @@ const Contactinfo: React.FC<IProps> = ({
   const handleFormSubmit = async (data: z.infer<typeof formSchema>) => {
     const isPublished = isDraft;
     const isArchived = false;
+
+    const method = formValues ? "PATCH" : "POST";
+    const url = formValues
+      ? `/api/trackings/${formValues._id}`
+      : "/api/trackings";
+
     try {
-      const response = await fetch("/api/trackings", {
-        method: "POST",
+      const response = await fetch(url, {
+        method: method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -133,10 +137,10 @@ const Contactinfo: React.FC<IProps> = ({
         toast({
           title: isDraft
             ? "Entry saved as draft!"
-            : "Entry created successfully!",
+            : "Entry updated successfully!",
           description: isDraft
             ? "Your form has been saved as draft."
-            : "Your form has been submitted.",
+            : "Your form has been updated.",
         });
         setOpenModal(false);
         setRefetch(new Date().toISOString());
@@ -185,7 +189,7 @@ const Contactinfo: React.FC<IProps> = ({
                           <div
                             className={cn(
                               item.type !== "select" &&
-                                "flex items-center gap-2.5 my-3 rounded-[14px] border border-[#F4F4F5] px-4 py-2 cursor-pointer w-full",
+                              "flex items-center gap-2.5 my-3 rounded-[14px] border border-[#F4F4F5] px-4 py-2 cursor-pointer w-full",
                               isFirstItem ? "md:col-span-2" : ""
                             )}
                           >
