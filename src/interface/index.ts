@@ -31,11 +31,11 @@ export interface ITracking {
 export interface Location {
   id: number;
   location: string;
-  startDate: DateValue;
-  endDate: DateValue;
-  startTime: Time;
-  endTime: Time;
-  actualDate: DateValue;
-  actualTime: Time;
+  startDate: DateValue | null;
+  endDate: DateValue | null;
+  startTime: Time | null;
+  endTime: Time | null;
+  actualDate: DateValue | null;
+  actualTime: Time | null;
   isCompleted: boolean;
 }

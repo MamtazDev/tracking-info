@@ -81,7 +81,7 @@ const Contactinfo: React.FC<IProps> = ({
   const setEditableContactInfo = useStore(
     (state) => state.setEditableContactInfo
   );
-  
+
   const [isDraft, setIsDraft] = useState(false);
   const [locations, setLocations] = useState<Location[]>(
     formValues?.locations || []
@@ -189,7 +189,7 @@ const Contactinfo: React.FC<IProps> = ({
                           <div
                             className={cn(
                               item.type !== "select" &&
-                              "flex items-center gap-2.5 my-3 rounded-[14px] border border-[#F4F4F5] px-4 py-2 cursor-pointer w-full",
+                                "flex items-center gap-2.5 my-3 rounded-[14px] border border-[#F4F4F5] px-4 py-2 cursor-pointer w-full",
                               isFirstItem ? "md:col-span-2" : ""
                             )}
                           >
@@ -204,6 +204,7 @@ const Contactinfo: React.FC<IProps> = ({
                                         placeholder={item.placeholder}
                                         {...inputProps}
                                         className="bg-transparent border-none"
+                                        required={true}
                                       />
                                     )
                                   }
@@ -227,6 +228,7 @@ const Contactinfo: React.FC<IProps> = ({
                                   placeholder={item.placeholder}
                                   {...field}
                                   className="bg-transparent border-none"
+                                  required={true}
                                 />
                               )}
                             </FormControl>
@@ -269,6 +271,7 @@ const Contactinfo: React.FC<IProps> = ({
                               placeholder="Notification Email"
                               className="bg-transparent border-none flex-grow"
                               {...field}
+                              required={true}
                             />
                           </div>
                         </FormControl>
@@ -304,6 +307,7 @@ const Contactinfo: React.FC<IProps> = ({
                                     placeholder={"Notification Phone"}
                                     className="bg-transparent border-none"
                                     {...inputProps}
+                                    required={true}
                                   />
                                 )
                               }
@@ -338,6 +342,7 @@ const Contactinfo: React.FC<IProps> = ({
                           placeholder={"Write a note here..."}
                           {...field}
                           className="bg-transparent border-none"
+                          required={true}
                         />
                       </FormControl>
 

@@ -27,18 +27,36 @@ type Props = {
   setLocations: React.Dispatch<React.SetStateAction<Location[]>>;
 };
 
+const getDate = (date: DateValue | null) => {
+  return date ? new CalendarDate(date.year, date.month, date.day) : null;
+};
+
+const getTime = (time: Time | null) => {
+  return time
+    ? new Time(time.hour, time.minute, time.second, time.millisecond)
+    : null;
+};
+
 export default function LocationComp({ locations, setLocations }: Props) {
-  const [editingLocation, setEditingLocation] = useState<Location | null>(null);
-  const [newLocation, setNewLocation] = useState<Omit<Location, "id">>({
+  const initial: Omit<Location, "id"> = {
+    // startDate: new CalendarDate(2024, 4, 21),
+    // endDate: new CalendarDate(2024, 4, 23),
+    // startTime: new Time(12, 0),
+    // endTime: new Time(13, 0),
+    // actualDate: new CalendarDate(2024, 4, 21),
+    // actualTime: new Time(12, 0),
     location: "",
-    startDate: new CalendarDate(2024, 4, 21),
-    endDate: new CalendarDate(2024, 4, 23),
-    startTime: new Time(12, 0),
-    endTime: new Time(13, 0),
-    actualDate: new CalendarDate(2024, 4, 21),
-    actualTime: new Time(12, 0),
+    startDate: null,
+    endDate: null,
+    startTime: null,
+    endTime: null,
+    actualDate: null,
+    actualTime: null,
     isCompleted: false,
-  });
+  };
+
+  const [editingLocation, setEditingLocation] = useState<Location | null>(null);
+  const [newLocation, setNewLocation] = useState<Omit<Location, "id">>(initial);
 
   const addLocation = () => {
     if (editingLocation) {
@@ -59,16 +77,7 @@ export default function LocationComp({ locations, setLocations }: Props) {
         },
       ]);
     }
-    setNewLocation({
-      location: "",
-      startDate: new CalendarDate(2024, 4, 21),
-      endDate: new CalendarDate(2024, 4, 23),
-      startTime: new Time(0, 0),
-      endTime: new Time(0, 0),
-      actualDate: new CalendarDate(2024, 4, 21),
-      actualTime: new Time(0, 0),
-      isCompleted: false,
-    });
+    setNewLocation(initial);
   };
 
   const handleCheckboxChange = (id: number) => {
@@ -84,8 +93,18 @@ export default function LocationComp({ locations, setLocations }: Props) {
   };
 
   const startEditing = (location: Location) => {
-    setEditingLocation(location);
-    setNewLocation(location);
+    const result: Location = {
+      ...location,
+      startDate: getDate(location.startDate),
+      endDate: getDate(location.endDate),
+      actualDate: getDate(location.actualDate),
+      startTime: getTime(location.startTime),
+      endTime: getTime(location.endTime),
+      actualTime: getTime(location.actualTime),
+    };
+
+    setEditingLocation(result);
+    setNewLocation(result);
   };
 
   const handleInputChange = (
@@ -219,6 +238,13 @@ export default function LocationComp({ locations, setLocations }: Props) {
             <Button
               type="button"
               onClick={addLocation}
+              disabled={
+                !newLocation.location ||
+                !newLocation.startTime ||
+                !newLocation.endTime ||
+                !newLocation.startDate ||
+                !newLocation.endDate
+              }
               className={`${
                 editingLocation ? "bg-[#64bf36]" : "bg-[#406AEC]"
               }  h-[30px] w-full sm:w-auto px-1 hover:bg-[#406AEC] hover:opacity-80 transition-all`}
@@ -271,11 +297,13 @@ export default function LocationComp({ locations, setLocations }: Props) {
                         <Icon name="calendar" width={10} height={10} />
                       </span>
                       <span className="text-xs">
-                        {formatDate(location.startDate)}
+                        {location.startDate
+                          ? formatDate(location.startDate)
+                          : ""}
                       </span>
                       <span className="mx-2">-</span>
                       <span className="text-xs">
-                        {formatDate(location.endDate)}
+                        {location.endDate ? formatDate(location.endDate) : ""}
                       </span>
                     </div>
                     <div className="flex items-center">
@@ -283,11 +311,13 @@ export default function LocationComp({ locations, setLocations }: Props) {
                         <Icon name="clock" width={10} height={10} />
                       </span>
                       <span className="text-xs">
-                        {formatTime(location.startTime)}
+                        {location.startTime
+                          ? formatTime(location.startTime)
+                          : ""}
                       </span>
                       <span className="mx-2">-</span>
                       <span className="text-xs">
-                        {formatTime(location.endTime)}
+                        {location.endTime ? formatTime(location.endTime) : ""}
                       </span>
                     </div>
                   </div>
@@ -297,8 +327,17 @@ export default function LocationComp({ locations, setLocations }: Props) {
                       <span>
                         <Icon name="calendar" width={10} height={10} />
                       </span>
-                      {/* <DateInput
-                        value={location.actualDate}
+                      {/* {console.log(location.actualDate)} */}
+                      <DateInput
+                        value={
+                          location.actualDate
+                            ? new CalendarDate(
+                                location.actualDate.year,
+                                location.actualDate.month,
+                                location.actualDate.day
+                              )
+                            : null
+                        }
                         onChange={(date) =>
                           updateActualDateTime(location.id, "actualDate", date)
                         }
@@ -310,15 +349,24 @@ export default function LocationComp({ locations, setLocations }: Props) {
                         }}
                         isInvalid={false}
                         size="sm"
-                      /> */}
+                      />
                     </div>
 
                     <div className="flex items-center">
                       <span>
                         <Icon name="clock" width={10} height={10} />
                       </span>
-                      {/* <TimeInput
-                        value={location.actualTime}
+                      <TimeInput
+                        value={
+                          location.actualTime
+                            ? new Time(
+                                location.actualTime.hour,
+                                location.actualTime.minute,
+                                location.actualTime.second,
+                                location.actualTime.millisecond
+                              )
+                            : null
+                        }
                         onChange={(time) =>
                           updateActualDateTime(location.id, "actualTime", time)
                         }
@@ -330,7 +378,7 @@ export default function LocationComp({ locations, setLocations }: Props) {
                         }}
                         size="sm"
                         hourCycle={24}
-                      /> */}
+                      />
                     </div>
                   </div>
                   <div className="hidden md:flex items-center mt-2">
@@ -364,7 +412,11 @@ export default function LocationComp({ locations, setLocations }: Props) {
                 </div>
               </div>
               <div className="lg:col-span-1 items-center justify-end hidden lg:flex">
-                <Button variant="ghost" onClick={() => startEditing(location)}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => startEditing(location)}
+                >
                   <Icon name="pen" />
                 </Button>
               </div>
