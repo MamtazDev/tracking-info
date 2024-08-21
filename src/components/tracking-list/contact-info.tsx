@@ -57,7 +57,7 @@ const formSchema = z.object({
     .refine((value) => !value || phoneRegex.test(value), {
       message: "Please enter a valid phone number",
     }),
-  notificationEmail: z.string().email(),
+  notificationEmail: z.string().email().optional(),
   note: z.string().optional(),
   status: z.string().default("none"),
 });
@@ -204,7 +204,6 @@ const Contactinfo: React.FC<IProps> = ({
                                         placeholder={item.placeholder}
                                         {...inputProps}
                                         className="bg-transparent border-none"
-                                        required={true}
                                       />
                                     )
                                   }
@@ -228,7 +227,6 @@ const Contactinfo: React.FC<IProps> = ({
                                   placeholder={item.placeholder}
                                   {...field}
                                   className="bg-transparent border-none"
-                                  required={true}
                                 />
                               )}
                             </FormControl>
@@ -271,7 +269,6 @@ const Contactinfo: React.FC<IProps> = ({
                               placeholder="Notification Email"
                               className="bg-transparent border-none flex-grow"
                               {...field}
-                              required={true}
                             />
                           </div>
                         </FormControl>
@@ -307,7 +304,6 @@ const Contactinfo: React.FC<IProps> = ({
                                     placeholder={"Notification Phone"}
                                     className="bg-transparent border-none"
                                     {...inputProps}
-                                    required={true}
                                   />
                                 )
                               }
@@ -342,7 +338,6 @@ const Contactinfo: React.FC<IProps> = ({
                           placeholder={"Write a note here..."}
                           {...field}
                           className="bg-transparent border-none"
-                          required={true}
                         />
                       </FormControl>
 

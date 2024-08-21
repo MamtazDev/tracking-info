@@ -8,6 +8,7 @@ import { Location } from "@/interface";
 import { CalendarDate, DateValue, Time } from "@internationalized/date";
 import { DateInput, TimeInput } from "@nextui-org/react";
 import React, { useState } from "react";
+import SearchLocation from "../ui/SearchLocation";
 
 const formatDate = (date: DateValue) => {
   const month = String(date.month).padStart(2, "0");
@@ -39,13 +40,14 @@ const getTime = (time: Time | null) => {
 
 export default function LocationComp({ locations, setLocations }: Props) {
   const initial: Omit<Location, "id"> = {
+    // location: "",
     // startDate: new CalendarDate(2024, 4, 21),
     // endDate: new CalendarDate(2024, 4, 23),
     // startTime: new Time(12, 0),
     // endTime: new Time(13, 0),
     // actualDate: new CalendarDate(2024, 4, 21),
     // actualTime: new Time(12, 0),
-    location: "",
+    location: null,
     startDate: null,
     endDate: null,
     startTime: null,
@@ -151,14 +153,22 @@ export default function LocationComp({ locations, setLocations }: Props) {
           <span className="text-gray-500 mr-2">
             <Icon name="location" />
           </span>
-          <Input
-            placeholder="Add Stop - Enter Address"
-            className="bg-white p-4 border-transparent flex-1"
-            value={newLocation.location}
-            onChange={(e) => handleInputChange(e, "location")}
-            onKeyDown={handleKeyPress}
-          />
+          <div className="relative w-full">
+            {/* <Input
+              placeholder="Add Stop - Enter Address"
+              className="bg-white p-4 border-transparent flex-1"
+              defaultValue={newLocation.location?.formatted}
+              debounceTime={500}
+              onChange={(e) => handleInputChange(e, "location")}
+              onKeyDown={handleKeyPress}
+            /> */}
+            <SearchLocation
+              selectedValue={newLocation}
+              changeHandler={setNewLocation}
+            />
+          </div>
         </div>
+
         <div className="flex w-full flex-col gap-5 sm:flex-row sm:space-x-10 sm:items-center md:justify-between">
           <div className="flex w-full flex-col md:flex-row  md:items-center gap-5">
             <div className="flex items-center w-full justify-between">
@@ -239,7 +249,7 @@ export default function LocationComp({ locations, setLocations }: Props) {
               type="button"
               onClick={addLocation}
               disabled={
-                !newLocation.location ||
+                !newLocation.location?.formatted ||
                 !newLocation.startTime ||
                 !newLocation.endTime ||
                 !newLocation.startDate ||
@@ -275,7 +285,7 @@ export default function LocationComp({ locations, setLocations }: Props) {
                     </div>
                     <div>
                       <p className="text-[#64748B] text-left max-w-[300px]  w-full whitespace-nowrap overflow-hidden text-ellipsis">
-                        {location.location}
+                        {location.location?.formatted}
                       </p>
                     </div>
                   </div>

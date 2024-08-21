@@ -1,5 +1,5 @@
 import { ITracking } from "@/interface";
-import { Time, DateValue } from "@internationalized/date";
+import { DateValue, Time } from "@internationalized/date";
 import mongoose, { Document, Model, ObjectId } from "mongoose";
 
 const dateSchema = new mongoose.Schema<DateValue>(
@@ -43,15 +43,29 @@ const schema = new mongoose.Schema<ITrackingDocument>(
     loadStatus: { type: String, trim: true, required: true },
     driverName: { type: String, trim: true, required: true },
     driverPhone: { type: String, trim: true, required: true },
-    carrierName: { type: String, trim: true, required: true },
-    carrierPhone: { type: String, trim: true, required: true },
-    notificationEmail: { type: String, trim: true, required: true },
-    notificationPhone: { type: String, trim: true, required: true },
-    note: { type: String, trim: true, required: true },
+    carrierName: { type: String, trim: true },
+    carrierPhone: { type: String, trim: true },
+    notificationEmail: { type: String, trim: true },
+    notificationPhone: { type: String, trim: true },
+    note: { type: String, trim: true },
     locations: [
       {
         id: { type: Number, required: true },
-        location: { type: String, trim: true, required: true },
+        location: {
+          type: { type: String, enum: ["Point"], default: "Point" },
+          formatted: { type: String, trim: true, required: true },
+          coordinates: {
+            type: [Number],
+            required: true,
+            validate: {
+              validator: function (value: number[]) {
+                return value.length === 2;
+              },
+              message: (props: Record<string, unknown>) =>
+                `${props.value} is not a valid coordinate array!`,
+            },
+          }, // [longitude, latitude]
+        },
         isCompleted: { type: Boolean, default: false },
         actualDate: dateSchema,
         actualTime: timeSchema,

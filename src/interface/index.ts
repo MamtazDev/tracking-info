@@ -14,7 +14,11 @@ export interface ITracking {
   note: string;
   locations: {
     id: number;
-    location: string;
+    location: {
+      type: "Point";
+      formatted: string;
+      coordinates: [number, number];
+    };
     isCompleted: boolean;
     actualDate: DateValue;
     actualTime: Time;
@@ -30,7 +34,11 @@ export interface ITracking {
 
 export interface Location {
   id: number;
-  location: string;
+  location: {
+    type: "Point";
+    formatted: string;
+    coordinates: [number, number];
+  } | null;
   startDate: DateValue | null;
   endDate: DateValue | null;
   startTime: Time | null;

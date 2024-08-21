@@ -1,13 +1,13 @@
 "use client";
 
+import { useToast } from "@/components/ui/use-toast";
+import { Icon } from "@/icons";
+import { Select, SelectItem } from "@nextui-org/react";
 import Image from "next/image";
 import trackingdetails from "../../../public/images/gps-tracking-details.svg";
+import ETA from "./eta";
 import Lastknownlocation from "./last-location";
 import Timeline from "./timeline";
-import ETA from "./eta";
-import { Icon } from "@/icons";
-import { useToast } from "@/components/ui/use-toast";
-import { Select, SelectItem } from "@nextui-org/react";
 
 const options = [
   { key: "under_process", label: "Under Process" },

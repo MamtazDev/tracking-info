@@ -6,6 +6,8 @@ export async function POST(req: Request) {
   try {
     await connectToMongoDB();
     const body = await req.json();
+    console.log(body);
+
     const result = await Tracking.create(body);
     return NextResponse.json({
       success: true,
@@ -16,7 +18,8 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        error: "An unexpected error occurred",
+        // error: "An unexpected error occurred",
+        error: error,
       },
       { status: 500 }
     );
